@@ -1,10 +1,12 @@
 package net.kazhik.android.koekaki;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -19,128 +21,178 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 public class KoeKakiActivity extends Activity {
-    private static final int REQUEST_CODE = 1234;
-    private ListView wordsList;
-    private ArrayAdapter<String> resultList;
-    private AlertDialog m_Dlg = null;  
-    /**
-     * Called with the activity is first created.
-     */
-    @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.voice_recog);
- 
-        Button speakButton = (Button) findViewById(R.id.speakButton);
-        
-        resultList = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
- 
-        
-        wordsList = (ListView) findViewById(R.id.list);
-        // リストビューのアイテムがクリックされた時に呼び出されるコールバックリスナーを登録します
-        wordsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view,
-                    int position, long id) {
-                ListView listView = (ListView) parent;
-                // クリックされたアイテムを取得します
-                String item = (String) listView.getItemAtPosition(position);
-                Toast.makeText(KoeKakiActivity.this, item, Toast.LENGTH_LONG).show();
-            }
-        });
-        // リストビューのアイテムが選択された時に呼び出されるコールバックリスナーを登録します
-        wordsList.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view,
-                    int position, long id) {
-                ListView listView = (ListView) parent;
-                // 選択されたアイテムを取得します
-                String item = (String) listView.getSelectedItem();
-                Toast.makeText(KoeKakiActivity.this, item, Toast.LENGTH_LONG).show();
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
-        });
- 
-        // Disable button if no recognition service is present
-        PackageManager pm = getPackageManager();
-        List<ResolveInfo> activities = pm.queryIntentActivities(
-                new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
-        if (activities.size() == 0)
-        {
-            speakButton.setEnabled(false);
-            speakButton.setText("Recognizer not present");
-        }
-    }
- 
-    /**
-     * Handle the action of the button being clicked
-     */
-    public void speakButtonClicked(View v)
-    {
-        startVoiceRecognitionActivity();
-    }
-    /**
-     * Handle the action of the button being clicked
-     */
-    public void patternButtonClicked(View v)
-    {
-    }
-    /**
-     * Handle the action of the button being clicked
-     */
-    public void freqButtonClicked(View v)
-    {
-    }
- 
-    /**
-     * Fire an intent to start the voice recognition activity.
-     */
-    private void startVoiceRecognitionActivity()
-    {
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak slowly and clearly");
-        startActivityForResult(intent, REQUEST_CODE);
-    }
- 
-    /**
-     * Handle the results from the voice recognition activity.
-     */
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK)
-        {
-            // Populate the wordsList with the String values the recognition engine thought it heard
-            final ArrayList<String> matches = data.getStringArrayListExtra(
-                    RecognizerIntent.EXTRA_RESULTS);
-            
-            ListView lv = new ListView(this);
-            lv.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, matches));
-            lv.setScrollingCacheEnabled(false);
-            lv.setOnItemClickListener(new OnItemClickListener(){
-            	public void onItemClick(AdapterView<?> items, View view, int position, long id) {
-            		m_Dlg.dismiss();
-            		resultList.add(matches.get(position).toString());
-            		wordsList.setAdapter(resultList);
-//            		Toast.makeText(KoeKakiActivity.this, matches.get(position).toString(), Toast.LENGTH_LONG).show();
-            	}
-            });
+	private static final int REQ_SPEAK = 1001;
+	private ListView m_lvHistory;
+	private ArrayAdapter<String> m_resultArray;
+	private ListView m_lvRecogResults;
+	private ArrayAdapter<String> m_recogResults;
+	private AlertDialog m_dlgRecogResults = null;  
+	private ExpressionDialog m_dlgExpression = null;
+	private ExpressionTable m_expressionTable;
+	/**
+	 * 
+	 */
+	@Override
+	public void onCreate(Bundle savedInstanceState)
+	{
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.koekaki);
 
-            // ダイアログを表示
-            m_Dlg = new AlertDialog.Builder(this)
-            .setTitle("Please choose")
-            .setPositiveButton("Cancel", null)
-            .setView(lv)
-            .create();
+		Button speakButton = (Button) findViewById(R.id.speakButton);
+		PackageManager pm = getPackageManager();
+		List<ResolveInfo> activities = pm.queryIntentActivities(
+				new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+		if (activities.isEmpty())
+		{
+			speakButton.setEnabled(false);
+			Toast.makeText(KoeKakiActivity.this, "Recognizer not present", Toast.LENGTH_LONG).show();
+			return;
+		}
+		m_expressionTable = new ExpressionTable(this);
 
-            m_Dlg.show();
+		m_resultArray = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+		initHistoryView();
+		createRecognitionResultDialog();
+		createExpressionDialog();
 
-        }
-        super.onActivityResult(requestCode, resultCode, data);
-    }
+
+	}
+	private void initHistoryView()
+	{
+		m_lvHistory = (ListView) findViewById(R.id.textList);
+
+		m_lvHistory.setAdapter(m_resultArray);
+
+		/*
+		m_lvHistory.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				ListView listView = (ListView) parent;
+				String item = (String) listView.getItemAtPosition(position);
+				Toast.makeText(KoeKakiActivity.this, item, Toast.LENGTH_LONG).show();
+			}
+		});
+		m_lvHistory.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				ListView listView = (ListView) parent;
+				String item = (String) listView.getSelectedItem();
+				Toast.makeText(KoeKakiActivity.this, item, Toast.LENGTH_LONG).show();
+			}
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+			}
+		});
+		*/
+	}
+	private void createRecognitionResultDialog()
+	{
+		m_recogResults = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+
+		m_lvRecogResults = new ListView(this);
+		m_lvRecogResults.setScrollingCacheEnabled(false);
+		
+		AdapterView.OnItemClickListener selectItemListener = new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> items, View view, int position, long id) {
+				ListView listView = (ListView) items;
+				String item = (String) listView.getItemAtPosition(position);
+				m_resultArray.insert(item,  0);
+				
+				m_resultArray.notifyDataSetChanged();
+				m_expressionTable.updateTimesUsed(item);
+				m_dlgRecogResults.dismiss();
+			}
+		};
+		m_lvRecogResults.setOnItemClickListener(selectItemListener);
+
+		DialogInterface.OnClickListener retryListener = new DialogInterface.OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				startVoiceRecognitionActivity();
+			}
+		};
+		
+		m_dlgRecogResults = new AlertDialog.Builder(this)
+		.setPositiveButton(R.string.button_retry, retryListener)
+		.setNegativeButton(R.string.button_cancel, null)
+		.setView(m_lvRecogResults)
+		.create();
+		
+	}
+	private void createExpressionDialog()
+	{
+		m_dlgExpression = new ExpressionDialog(this, m_expressionTable);
+		
+		DialogInterface.OnDismissListener dismissListener = new DialogInterface.OnDismissListener() {
+			@Override
+			public void onDismiss(DialogInterface dialog) {
+				if (m_dlgExpression.getSelectedStr().length() > 0) {
+					m_resultArray.insert(m_dlgExpression.getSelectedStr(), 0);
+					m_resultArray.notifyDataSetChanged();
+				}
+			}
+		};
+		m_dlgExpression.setOnDismissListener(dismissListener);
+	}
+
+	/**
+	 * Handle the action of the button being clicked
+	 */
+	public void speakButtonClicked(View v)
+	{
+		startVoiceRecognitionActivity();
+	}
+	/**
+	 * Handle the action of the button being clicked
+	 */
+	public void expressionButtonClicked(View v)
+	{
+		m_dlgExpression.loadExpressions();
+		m_dlgExpression.show();
+
+	}
+	/**
+	 * Handle the action of the button being clicked
+	 */
+	public void freqButtonClicked(View v)
+	{
+	}
+
+	/**
+	 * Fire an intent to start the voice recognition activity.
+	 */
+	private void startVoiceRecognitionActivity()
+	{
+		Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+		intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+				RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+		intent.putExtra(RecognizerIntent.EXTRA_PROMPT, R.string.please_speak);
+		startActivityForResult(intent, REQ_SPEAK);
+	}
+
+	/**
+	 * Handle the results from the voice recognition activity.
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (requestCode == REQ_SPEAK && resultCode == RESULT_OK)
+		{
+			final ArrayList<String> candidates = data.getStringArrayListExtra(
+					RecognizerIntent.EXTRA_RESULTS);
+			m_recogResults.clear();
+			for (Iterator<String> it = candidates.iterator(); it.hasNext();) {
+				m_recogResults.add(it.next());
+			}
+
+			m_lvRecogResults.setAdapter(m_recogResults);
+
+			m_dlgRecogResults.show();
+
+		}
+		super.onActivityResult(requestCode, resultCode, data);
+	}
+
 }
