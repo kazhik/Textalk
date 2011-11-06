@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">KoeKaki</string>
+    <string name="button_speak">Speak</string>
+    <string name="button_cancel">Cancel</string>
+    <string name="please_speak">Please speak</string>
+    <string name="button_retry">Retry</string>
+    <string name="button_expression">Expression</string>
+    <string name="menu_deleteitem">Delete this item</string>
+    <string name="menu_deleteall">Delete All</string>
 
 </resources>
