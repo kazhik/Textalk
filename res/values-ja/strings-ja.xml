@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">声書</string>
+    <string name="button_speak">話す</string>
+    <string name="button_cancel">取消</string>
+    <string name="please_speak">お話しください</string>
+    <string name="button_retry">もう一度</string>
+    <string name="button_expression">既入力文</string>
+    <string name="menu_deleteitem">この項目を削除</string>
+    <string name="menu_deleteall">全項目を削除</string>
+
+</resources>
