@@ -130,6 +130,7 @@ public class KoeKakiActivity extends Activity {
 			public void onDismiss(DialogInterface dialog) {
 				if (m_dlgExpression.getSelectedStr().length() > 0) {
 					m_resultArray.insert(m_dlgExpression.getSelectedStr(), 0);
+					m_dlgExpression.setSelectedStr("");
 					m_resultArray.notifyDataSetChanged();
 				}
 			}

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">声書</string>
+    <string name="app_name">声書き</string>
     <string name="button_speak">話す</string>
     <string name="button_cancel">取消</string>
     <string name="please_speak">お話しください</string>

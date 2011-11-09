@@ -49,6 +49,7 @@ public class ExpressionDialog extends Dialog {
 
 	public void cancelButtonClicked(View v)
 	{
+		// TODO: this eventhandler doesn't work
 		dismiss();
 
 	}
