@@ -3,6 +3,7 @@ package net.kazhik.android.koekaki;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -26,16 +27,11 @@ import android.widget.Toast;
 
 public class KoeKakiActivity extends Activity {
 	private static final int DIALOG_EXPRESSIONS = 200;
-	private static final int DIALOG_RECOGNITIONRESULT = 201;
 	private static final int DIALOG_CLEAR = 202;
 	private static final int REQ_SPEAK = 1001;
-	private ListView m_lvHistory;
-	private ArrayAdapter<String> m_resultArray;
-	private ListView m_lvRecogResults;
-	private ArrayAdapter<String> m_recogResults;
-	private AlertDialog m_dlgRecogResults = null;  
-	private ExpressionDialog m_dlgExpression = null;
+	private ArrayAdapter<String> m_speakHistory;
 	private ExpressionTable m_expressionTable;
+	
 	private boolean m_visible = true;
 	/**
 	 * 
@@ -61,7 +57,6 @@ public class KoeKakiActivity extends Activity {
 
 		
 		initHistoryView();
-		createRecognitionResultDialog();
 		createExpressionDialog();
 		createClearConfirmDialog();
 
@@ -70,11 +65,11 @@ public class KoeKakiActivity extends Activity {
 	}
 	private void initHistoryView()
 	{
-		m_resultArray = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+		m_speakHistory = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 		
-		m_lvHistory = (ListView) findViewById(R.id.textList);
+		ListView historyView = (ListView) findViewById(R.id.textList);
 
-		m_lvHistory.setAdapter(m_resultArray);
+		historyView.setAdapter(m_speakHistory);
 
 	}
 	private Dialog createClearConfirmDialog()
@@ -94,60 +89,69 @@ public class KoeKakiActivity extends Activity {
 		
 		return confirmDialog;
 	}
-	private Dialog createRecognitionResultDialog()
+	private void showRecognitionResultDialog(ArrayList<String> results)
 	{
-		m_recogResults = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
-
-		m_lvRecogResults = new ListView(this);
-		m_lvRecogResults.setScrollingCacheEnabled(false);
-		
-		AdapterView.OnItemClickListener selectItemListener = new OnItemClickListener() {
-			public void onItemClick(AdapterView<?> items, View view, int position, long id) {
-				ListView listView = (ListView) items;
-				String item = (String) listView.getItemAtPosition(position);
-				m_resultArray.insert(item,  0);
-				
-				m_resultArray.notifyDataSetChanged();
-				m_expressionTable.updateTimesUsed(item);
-				m_dlgRecogResults.dismiss();
-			}
-		};
-		m_lvRecogResults.setOnItemClickListener(selectItemListener);
-
+		// 再試行ボタン
 		DialogInterface.OnClickListener retryListener = new DialogInterface.OnClickListener() {
 			@Override
 			public void onClick(DialogInterface dialog, int which) {
 				startVoiceRecognitionActivity();
 			}
 		};
-	
-		m_dlgRecogResults = new AlertDialog.Builder(this)
+
+		final AlertDialog resultDialog = new AlertDialog.Builder(this)
 		.setPositiveButton(R.string.button_retry, retryListener)
 		.setNegativeButton(android.R.string.cancel, null)
-		.setView(m_lvRecogResults)
 		.create();
 		
-		return m_dlgRecogResults;
+		// 認識結果を表示するListViewの設定
+		ListView resultView = new ListView(this);
+		resultView.setScrollingCacheEnabled(false);
+
+		ArrayAdapter<String> recogResults
+			= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+		for (Iterator<String> it = results.iterator(); it.hasNext();) {
+			recogResults.add(it.next());
+		}
+		resultView.setAdapter(recogResults);
+		
+		AdapterView.OnItemClickListener selectItemListener = new OnItemClickListener() {
+			public void onItemClick(AdapterView<?> items, View view, int position, long id) {
+				ListView listView = (ListView) items;
+				String item = (String) listView.getItemAtPosition(position);
+				m_speakHistory.insert(item,  0);
+				
+				m_speakHistory.notifyDataSetChanged();
+				m_expressionTable.updateTimesUsed(item);
+				
+				resultDialog.dismiss();
+			}
+		};
+		resultView.setOnItemClickListener(selectItemListener);
+
+		resultDialog.setView(resultView);
+
+		resultDialog.show();
+		
 	}
 	private Dialog createExpressionDialog()
 	{
-		m_dlgExpression = new ExpressionDialog(this, m_expressionTable);
+		final ExpressionDialog expDialog = new ExpressionDialog(this, m_expressionTable);
 		
 		DialogInterface.OnDismissListener dismissListener = new DialogInterface.OnDismissListener() {
 			@Override
 			public void onDismiss(DialogInterface dialog) {
-				String selectedStr = m_dlgExpression.getSelectedStr();
+				String selectedStr = expDialog.getSelectedStr();
 				if (selectedStr.length() > 0) {
 					m_expressionTable.updateTimesUsed(selectedStr);
-					m_resultArray.insert(selectedStr, 0);
-					m_resultArray.notifyDataSetChanged();
-					m_dlgExpression.setSelectedStr("");
+					m_speakHistory.insert(selectedStr, 0);
+					m_speakHistory.notifyDataSetChanged();
+					expDialog.setSelectedStr("");
 				}
 			}
 		};
-		m_dlgExpression.setOnDismissListener(dismissListener);
-		
-		return m_dlgExpression;
+		expDialog.setOnDismissListener(dismissListener);
+		return expDialog;
 	}
 	@Override
 	protected Dialog onCreateDialog(int id) {
@@ -155,9 +159,6 @@ public class KoeKakiActivity extends Activity {
 	    switch (id) {
 	    case DIALOG_EXPRESSIONS:
 	        d = createExpressionDialog();
-	        break;
-	    case DIALOG_RECOGNITIONRESULT:
-	        d = createRecognitionResultDialog();
 	        break;
 	    case DIALOG_CLEAR:
 	        d = createClearConfirmDialog();
@@ -208,9 +209,16 @@ public class KoeKakiActivity extends Activity {
 	 */
 	private void startVoiceRecognitionActivity()
 	{
+		String lang =
+				PreferenceManager.getDefaultSharedPreferences(this).getString("recognition_language", "default");
 		Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
 		intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
 				RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+		if (lang.equals("default")) {
+			intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().getLanguage());
+		} else {
+			intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, lang);
+		}
 		intent.putExtra(RecognizerIntent.EXTRA_PROMPT, R.string.please_speak);
 		startActivityForResult(intent, REQ_SPEAK);
 	}
@@ -223,25 +231,18 @@ public class KoeKakiActivity extends Activity {
 	{
 		if (requestCode == REQ_SPEAK && resultCode == RESULT_OK)
 		{
-			final ArrayList<String> candidates = data.getStringArrayListExtra(
+			ArrayList<String> results = data.getStringArrayListExtra(
 					RecognizerIntent.EXTRA_RESULTS);
 			
-			if (candidates.isEmpty()) {
+			if (results.isEmpty()) {
 				Toast.makeText(KoeKakiActivity.this, R.string.no_results, Toast.LENGTH_LONG).show();
 				return;
 			}
+			showRecognitionResultDialog(results);
 			
-			m_recogResults.clear();
-			for (Iterator<String> it = candidates.iterator(); it.hasNext();) {
-				m_recogResults.add(it.next());
-			}
-
-			m_lvRecogResults.setAdapter(m_recogResults);
-
-			showDialog(DIALOG_RECOGNITIONRESULT);
 
 		} else if (requestCode == KoeKakiConstants.REQUEST_CODE_SETTINGS) {
-			if (resultCode == 200) {
+			if (resultCode == KoeKakiConstants.RESULT_CODE_CLEAR) {
 				showDialog(DIALOG_CLEAR);
 			}
 		}

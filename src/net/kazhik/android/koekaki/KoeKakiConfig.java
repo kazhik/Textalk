@@ -48,7 +48,7 @@ public class KoeKakiConfig extends PreferenceActivity implements SharedPreferenc
             Preference preference) {
 		
 		if (preference.getKey().equals("pref_expressions_clear")) {
-			setResult(200);
+			setResult(KoeKakiConstants.RESULT_CODE_CLEAR);
 			finish();
 			
 		}

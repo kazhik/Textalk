@@ -12,4 +12,14 @@
 <item>20</item>
 <item>0</item>
 </string-array>
+<string-array name="recognition_languages">
+<item>Default</item>
+<item>English</item>
+<item>Japanese</item>
+</string-array>
+<string-array name="recognition_languages_value">
+<item>default</item>
+<item>en</item>
+<item>ja</item>
+</string-array>
 </resources>

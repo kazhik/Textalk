@@ -22,10 +22,13 @@
     <string name="pref_settings_title">Settings</string>
     <string name="pref_expressions_settings_title">Expressions</string>
     <string name="pref_expressions_max_dialogtitle">Max of expressions</string>
-    <string name="pref_expressions_max_title">Max of expressions</string>
+    <string name="pref_expressions_max_title">Maximum</string>
     <string name="pref_expressions_max_summary">Maximum of expressions to be shown</string>
-    <string name="pref_expressions_clear">Clear expressions</string>
     <string name="pref_expressions_clear_title">Clear expressions</string>
     <string name="pref_expressions_clear_summary">Clear all expressions</string>
-
+    <string name="pref_recognition_settings_title">Speech recognition</string>
+    <string name="pref_recognition_language_dialogtitle">Language in speech recognition</string>
+    <string name="pref_recognition_language_title">Language</string>
+    <string name="pref_recognition_language_summary">In which language to perform speech recognition</string>
+        
 </resources>

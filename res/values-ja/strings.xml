@@ -18,11 +18,15 @@
     <string name="no_results">1件もありません</string>
     <string name="confirm_clear">既入力文を消去しますか？</string>
     <string name="file_saved">ファイルが保存されました</string>
+    <string name="pref_settings_title">設定</string>
     <string name="pref_expressions_settings_title">既入力文の設定</string>
     <string name="pref_expressions_max_dialogtitle">既入力文の最大表示数</string>
-    <string name="pref_expressions_max_title">既入力文の最大表示数</string>
+    <string name="pref_expressions_max_title">最大表示数</string>
     <string name="pref_expressions_max_summary">既入力文の最大表示数</string>
-    <string name="pref_expressions_clear">既入力文の削除</string>
     <string name="pref_expressions_clear_title">既入力文の削除</string>
     <string name="pref_expressions_clear_summary">既入力文を削除します</string>
+    <string name="pref_recognition_settings_title">音声認識の設定</string>
+    <string name="pref_recognition_language_dialogtitle">音声認識の言語</string>
+    <string name="pref_recognition_language_title">言語</string>
+    <string name="pref_recognition_language_summary">音声認識で使われる言語</string>
 </resources>
