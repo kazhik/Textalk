@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">声書き</string>
+    <string name="activity_name_handwriting">声書き: 手書き</string>
+    <string name="button_speak">話す</string>
+    <string name="button_write">手書き</string>
+    <string name="please_speak">お話しください</string>
+    <string name="button_retry">もう一度</string>
+    <string name="button_expression">既入力文</string>
+    <string name="menu_settings">設定</string>
+    <string name="menu_deleteitem">この項目を削除</string>
+    <string name="menu_deleteall">全項目を削除</string>
+    <string name="button_clear">消去</string>
+    <string name="button_undo">一つ戻す</string>
+    <string name="button_save">保存</string>
+    <string name="button_close">閉じる</string>
+    <string name="no_expressions">1件もありません</string>
+    <string name="no_results">1件もありません</string>
+    <string name="confirm_clear">既入力文を消去しますか？</string>
+    <string name="file_saved">ファイルが保存されました</string>
+    <string name="pref_expressions_settings_title">既入力文の設定</string>
+    <string name="pref_expressions_max_dialogtitle">既入力文の最大表示数</string>
+    <string name="pref_expressions_max_title">既入力文の最大表示数</string>
+    <string name="pref_expressions_max_summary">既入力文の最大表示数</string>
+    <string name="pref_expressions_clear">既入力文の削除</string>
+    <string name="pref_expressions_clear_title">既入力文の削除</string>
+    <string name="pref_expressions_clear_summary">既入力文を削除します</string>
+</resources>

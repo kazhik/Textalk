@@ -112,8 +112,7 @@ public class ExpressionTable {
 
     }
 	
-	public ArrayList<String> getExpressions() {
-		ArrayList<String> result = new ArrayList<String>();
+	public ArrayList<String> getExpressions(int max) {
 		
 		SQLiteDatabase db = m_databaseHelper.getReadableDatabase();
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
@@ -124,7 +123,9 @@ public class ExpressionTable {
 		String selection = null;
 		String[] selectionArgs = null;
 		String sortOrder = "timesused desc";
-		String limit = "5"; // TODO: とりあえず
+		String limit = (max == 0)? null: Integer.toString(max);
+		
+		ArrayList<String> result = new ArrayList<String>();
 		
 		Cursor cursor = qb.query(db, columns, selection, selectionArgs, null,
 				null, sortOrder, limit);
