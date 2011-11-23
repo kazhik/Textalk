@@ -30,5 +30,8 @@
     <string name="pref_recognition_language_dialogtitle">Language in speech recognition</string>
     <string name="pref_recognition_language_title">Language</string>
     <string name="pref_recognition_language_summary">In which language to perform speech recognition</string>
-        
+    <string name="pref_handwriting_settings_title">Handwriting</string>
+    <string name="pref_handwriting_theme_dialogtitle">Color theme</string>
+    <string name="pref_handwriting_theme_title">Color theme</string>
+    <string name="pref_handwriting_theme_summary">Color theme for handwriting</string>
 </resources>

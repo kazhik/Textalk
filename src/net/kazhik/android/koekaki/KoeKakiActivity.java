@@ -32,7 +32,6 @@ public class KoeKakiActivity extends Activity {
 	private ArrayAdapter<String> m_speakHistory;
 	private ExpressionTable m_expressionTable;
 	
-	private boolean m_visible = true;
 	/**
 	 * 
 	 */
@@ -61,7 +60,17 @@ public class KoeKakiActivity extends Activity {
 		createClearConfirmDialog();
 
 //		findViewById(R.id.main).setBackgroundColor(0xffffffff);
+	    @SuppressWarnings("unchecked")
+		final ArrayAdapter<String> history = (ArrayAdapter<String>) getLastNonConfigurationInstance();
+	    if (history != null) {
+	    	m_speakHistory = history;
+	    }
 
+	}
+	@Override
+	public Object onRetainNonConfigurationInstance() {
+	    final ArrayAdapter<String> history = m_speakHistory;
+	    return history;
 	}
 	private void initHistoryView()
 	{
@@ -177,10 +186,6 @@ public class KoeKakiActivity extends Activity {
 	{
 		
 		startActivity(new Intent(KoeKakiActivity.this, HandwritingActivity.class));
-		/*
-		Intent LaunchIntent = getPackageManager().getLaunchIntentForPackage("jp.joker.smile.hitudan");
-		startActivity( LaunchIntent );
-		*/
 	}
 	/**
 	 * Handle the action of the button being clicked
@@ -261,8 +266,6 @@ public class KoeKakiActivity extends Activity {
 	// オプションメニューが表示される度に呼び出されます
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(KoeKakiConstants.MENU_SETTING).setVisible(m_visible);
-		m_visible = !m_visible;
 		return super.onPrepareOptionsMenu(menu);
 	}
 

@@ -4,9 +4,12 @@ import net.kazhik.android.koekaki.brush.Brush;
 import net.kazhik.android.koekaki.brush.PenBrush;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
+import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -20,6 +23,7 @@ import android.widget.Button;
  * Date: 07/11/2010
  * Time: 2:14 AM
  * Link: http://www.tutorialforandroid.com/
+ * Modified by kazhik, 2011.
  */
 public class HandwritingActivity extends Activity implements View.OnTouchListener{
 	private DrawingSurface m_drawingSurface;
@@ -45,10 +49,13 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 
 		m_drawingSurface = (DrawingSurface) findViewById(R.id.drawingSurface);
 		m_drawingSurface.setOnTouchListener(this);
-		m_drawingSurface.m_previewPath = new DrawingPath();
-		m_drawingSurface.m_previewPath.path = new Path();
-		m_drawingSurface.m_previewPath.paint = getPreviewPaint();
+		m_drawingSurface.setPreviewPath(getPreviewPaint());
 
+	    final CommandManager cmdMgr = (CommandManager) getLastNonConfigurationInstance();
+	    if (cmdMgr != null) {
+	    	m_drawingSurface.setCommandManager(cmdMgr);
+	    }
+		
 		m_undoBtn = (Button) findViewById(R.id.undoBtn);
 		m_undoBtn.setEnabled(false);
 
@@ -56,60 +63,77 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 		m_clearBtn.setEnabled(false);
 
 	}
-
+	@Override
+	public Object onRetainNonConfigurationInstance() {
+	    final CommandManager cmdMgr = m_drawingSurface.getCommandManager();
+	    return cmdMgr;
+	}
+	public void fixOrientation() {
+		int currentOrientation = getResources().getConfiguration().orientation;
+		if(currentOrientation == Configuration.ORIENTATION_LANDSCAPE){
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+		} else if (currentOrientation == Configuration.ORIENTATION_PORTRAIT){
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		}
+	}
 	private void setCurrentPaint(){
+		String theme =
+				PreferenceManager.getDefaultSharedPreferences(this).getString("handwriting_theme", "white");
+		
 		m_currentPaint = new Paint();
 		m_currentPaint.setDither(false);
-		m_currentPaint.setColor(0xFFFFFFFF);
+		if (theme.equals("white")) {
+			m_currentPaint.setColor(Color.BLACK);
+		} else if (theme.equals("beige")) {
+			m_currentPaint.setColor(Color.BLUE);
+		} else if (theme.equals("blue")) {
+			m_currentPaint.setColor(Color.rgb(0xFA, 0xFA, 0xD2));
+		}
 		m_currentPaint.setStyle(Paint.Style.STROKE);
 		m_currentPaint.setStrokeJoin(Paint.Join.ROUND);
 		m_currentPaint.setStrokeCap(Paint.Cap.ROUND);
-		m_currentPaint.setStrokeWidth(3);
+		m_currentPaint.setStrokeWidth(5);
 
 	}
 
 	private Paint getPreviewPaint(){
-		final Paint previewPaint = new Paint();
-		previewPaint.setColor(0xFFC1C1C1);
-		previewPaint.setStyle(Paint.Style.STROKE);
-		previewPaint.setStrokeJoin(Paint.Join.ROUND);
-		previewPaint.setStrokeCap(Paint.Cap.ROUND);
-		previewPaint.setStrokeWidth(3);
-		return previewPaint;
+		return m_currentPaint;
 	}
-
-
-
 
 	public boolean onTouch(View view, MotionEvent motionEvent) {
 		if(motionEvent.getAction() == MotionEvent.ACTION_DOWN){
-			m_drawingSurface.m_isDrawing = true;
-
+			m_drawingSurface.setIsDrawing(true);
+			
 			m_currentDrawingPath = new DrawingPath();
-			m_currentDrawingPath.paint = m_currentPaint;
-			m_currentDrawingPath.path = new Path();
-			m_currentBrush.mouseDown(m_currentDrawingPath.path, motionEvent.getX(), motionEvent.getY());
-			m_currentBrush.mouseDown(m_drawingSurface.m_previewPath.path, motionEvent.getX(), motionEvent.getY());
+			m_currentDrawingPath.setPait(m_currentPaint);
+			m_currentDrawingPath.initPath();
+			m_currentBrush.mouseDown(m_currentDrawingPath.getPath(),
+					motionEvent.getX(), motionEvent.getY());
+			m_currentBrush.mouseDown(m_drawingSurface.getPreviewPath().getPath(),
+					motionEvent.getX(), motionEvent.getY());
 
+			fixOrientation();
 
 		}else if(motionEvent.getAction() == MotionEvent.ACTION_MOVE){
-			m_drawingSurface.m_isDrawing = true;
-			m_currentBrush.mouseMove( m_currentDrawingPath.path, motionEvent.getX(), motionEvent.getY() );
-			m_currentBrush.mouseMove(m_drawingSurface.m_previewPath.path, motionEvent.getX(), motionEvent.getY());
-
+			m_drawingSurface.setIsDrawing(true);
+			m_currentBrush.mouseMove( m_currentDrawingPath.getPath(),
+					motionEvent.getX(), motionEvent.getY() );
+			m_currentBrush.mouseMove(m_drawingSurface.getPreviewPath().getPath(),
+					motionEvent.getX(), motionEvent.getY());
 
 		}else if(motionEvent.getAction() == MotionEvent.ACTION_UP){
-
-
-			m_currentBrush.mouseUp(m_drawingSurface.m_previewPath.path, motionEvent.getX(), motionEvent.getY());
-			m_drawingSurface.m_previewPath.path = new Path();
+			m_currentBrush.mouseUp(m_drawingSurface.getPreviewPath().getPath(),
+					motionEvent.getX(), motionEvent.getY());
+			m_drawingSurface.getPreviewPath().initPath();
 			m_drawingSurface.addDrawingPath(m_currentDrawingPath);
 
-			m_currentBrush.mouseUp( m_currentDrawingPath.path, motionEvent.getX(), motionEvent.getY() );
+			m_currentBrush.mouseUp( m_currentDrawingPath.getPath(),
+					motionEvent.getX(), motionEvent.getY() );
 
 			m_undoBtn.setEnabled(true);
 			m_clearBtn.setEnabled(true);
 
+			fixOrientation();
 		}
 
 		return true;
@@ -120,8 +144,10 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 		switch (view.getId()){
 		case R.id.undoBtn:
 			m_drawingSurface.undo();
-			if( m_drawingSurface.hasMoreUndo() == false ){
+			if( m_drawingSurface.hasStack() == false ){
 				m_undoBtn.setEnabled( false );
+				m_clearBtn.setEnabled(false);
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 			}
 			break;
 
@@ -129,6 +155,7 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 			m_drawingSurface.clear();
 			m_undoBtn.setEnabled( false );
 			m_clearBtn.setEnabled(false);
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 			break;
 		case R.id.closeBtn:
 			finish();
@@ -221,5 +248,29 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 			break;
 		}
 		return ret;
+	}
+	private void setTheme() {
+		String theme =
+				PreferenceManager.getDefaultSharedPreferences(this).getString("handwriting_theme", "white");
+		
+		if (theme.equals("white")) {
+			m_currentPaint.setColor(Color.BLACK);
+		} else if (theme.equals("green")) {
+			m_currentPaint.setColor(Color.rgb(0x8B, 0x00, 0x00));
+		} else if (theme.equals("blue")) {
+			m_currentPaint.setColor(Color.rgb(0xFA, 0xFA, 0xD2));
+		} else {
+			m_currentPaint.setColor(Color.BLACK);
+		}
+		
+	}
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (requestCode == KoeKakiConstants.REQUEST_CODE_SETTINGS) {
+			setTheme();
+		}
+		
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 }

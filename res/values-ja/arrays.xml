@@ -22,4 +22,14 @@
 <item>ja</item>
 <item>en</item>
 </string-array>
+<string-array name="handwriting_themes">
+<item>ホワイト</item>
+<item>グリーン</item>
+<item>ブルー</item>
+</string-array>
+<string-array name="handwriting_themes_value">
+<item>white</item>
+<item>green</item>
+<item>blue</item>
+</string-array>
 </resources>

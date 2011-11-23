@@ -14,6 +14,7 @@ import android.os.Handler;
  * Date: 15/11/2010
  * Time: 12:23 AM
  * To change this template use File | Settings | File Templates.
+ * Modified by kazhik, 2011.
  */
 public class CommandManager {
 	private List<DrawingPath> currentStack;
@@ -61,7 +62,7 @@ public class CommandManager {
 
 
 
-	public boolean hasMoreUndo(){
+	public boolean hasStack(){
 		return  currentStack.toArray().length > 0;
 	}
 
