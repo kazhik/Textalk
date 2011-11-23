@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">声書き</string>
-    <string name="activity_name_handwriting">声書き: 手書き</string>
+    <string name="app_name">Textalk</string>
+    <string name="activity_name_handwriting">Textalk: 手書き</string>
     <string name="button_speak">話す</string>
     <string name="button_write">手書き</string>
     <string name="please_speak">お話しください</string>

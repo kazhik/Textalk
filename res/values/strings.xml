@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">KoeKaki</string>
-    <string name="activity_name_handwriting">KoeKaki: Handwriting</string>
+    <string name="app_name">Textalk</string>
+    <string name="activity_name_handwriting">Textalk: Handwriting</string>
     <string name="button_speak">Speak</string>
     <string name="button_write">Handwriting</string>
     <string name="button_retry">Retry</string>
