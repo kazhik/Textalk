@@ -68,7 +68,7 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 	}
 	public void stopDraw() {
 		m_drawThread.stopDraw();
-		
+
 	}
 	public void setPaint(Paint paint) {
 		m_currentPaint = paint;
@@ -139,18 +139,21 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 		}
 		public void createBitmap(int width, int height) {
 			m_Bitmap =  Bitmap.createBitmap (width, height, Bitmap.Config.ARGB_8888);
-			
+
 		}
 
 		public void stopDraw() {
 			interrupt();
-			
+
 		}
 
 		public void requestDraw() {
 			m_lock.lock();
-			m_condition.signal();
-			m_lock.unlock();
+			try {
+				m_condition.signal();
+			} finally {
+				m_lock.unlock();
+			}
 		}
 
 		private synchronized void drawAllPath(Canvas c) {
@@ -162,7 +165,7 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 					i.next().draw(c);
 				}
 			}
-			
+
 		}
 		private void drawAll() {
 			Canvas canvas = m_SurfaceHolder.lockCanvas(null);
@@ -182,7 +185,7 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 			canvas.drawBitmap (m_Bitmap, 0,  0, null);
 			m_SurfaceHolder.unlockCanvasAndPost(canvas);
-	
+
 		}
 		@Override
 		public void run() {
@@ -192,7 +195,7 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 				try{
 					m_lock.lock();
 					m_condition.await();
-					
+
 					drawAll();
 				} catch (InterruptedException e) {
 					bRunning = false;
