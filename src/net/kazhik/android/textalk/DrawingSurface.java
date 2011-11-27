@@ -1,10 +1,12 @@
 package net.kazhik.android.textalk;
 
+import java.util.EmptyStackException;
+import java.util.Iterator;
+import java.util.Stack;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import net.kazhik.android.textalk.brush.Brush;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -13,7 +15,6 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -27,57 +28,69 @@ import android.view.SurfaceView;
  */
 public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callback {
 	protected DrawThread m_drawThread;
-	private DrawingPathManager m_drawingPathManager = null;
-	private DrawingPath m_previewPath = null;
+	private Stack <DrawingPath> m_pathStack;
+	private DrawingPath m_currentDrawingPath = null;
+	private Paint m_currentPaint;
+	private int m_backgroundColor;
 
 	public DrawingSurface(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		getHolder().addCallback(this);
 
-		m_drawingPathManager = new DrawingPathManager();
+		m_pathStack = new Stack<DrawingPath>();
+
+		String theme = PreferenceManager.getDefaultSharedPreferences(getContext())
+				.getString("handwriting_theme", "white");
+		if (theme.equals("white")) {
+			m_backgroundColor = Color.WHITE;
+		} else if (theme.equals("green")) {
+			m_backgroundColor = Color.rgb(0x98, 0xFB, 0x98);
+		} else if (theme.equals("blue")) {
+			m_backgroundColor = Color.rgb(0x4B, 0x00, 0x82);
+		} else {
+			m_backgroundColor = Color.WHITE;
+		}
 	}
-	public void mouseUp(Brush brush, float x, float y) {
-		brush.mouseUp(m_previewPath.getPath(), x, y);
+	public void mouseDown(float x, float y) {
+		m_currentDrawingPath = new DrawingPath(m_currentPaint);
+		m_currentDrawingPath.mouseDown(x, y);
+		m_drawThread.requestDraw();
 	}
-	public void mouseMove(Brush brush, float x, float y) {
-		brush.mouseMove(m_previewPath.getPath(), x, y);
+	public void mouseMove(float x, float y) {
+		m_currentDrawingPath.mouseMove(x, y);
+		m_drawThread.requestDraw();
 	}
-	public void mouseDown(Brush brush, float x, float y) {
-		brush.mouseDown(m_previewPath.getPath(), x, y);
-	}
-	public void requestDraw() {
+	public void mouseUp(float x, float y) {
+		m_currentDrawingPath.mouseUp(x, y);
+		m_pathStack.push(m_currentDrawingPath);
 		m_drawThread.requestDraw();
 	}
 	public void stopDraw() {
 		m_drawThread.stopDraw();
 		
 	}
-	public void setPreviewPath(Paint paint) {
-		if (m_previewPath == null) {
-			m_previewPath = new DrawingPath(paint);
-		}
-	}
-	public void clearPreviewPath() {
-		m_previewPath.clearPath();
-	}
-
-	public void addDrawingPath (DrawingPath drawingPath){
-		m_drawingPathManager.addPath(drawingPath);
+	public void setPaint(Paint paint) {
+		m_currentPaint = paint;
 	}
 
 
 	public void undo(){
-		m_drawingPathManager.undo();
+		try {
+			m_pathStack.pop();
+		} catch (EmptyStackException e) {
+		}
+		m_currentDrawingPath.clearPath();
 		m_drawThread.requestDraw();
 	}
 	public void clear(){
-		m_drawingPathManager.clear();
+		m_pathStack.clear();
+		m_currentDrawingPath.clearPath();
 		m_drawThread.requestDraw();
 	}
 
 	public boolean hasStack(){
-		return m_drawingPathManager.hasStack();
+		return m_pathStack.size() > 0;
 	}
 
 	@Override
@@ -97,7 +110,6 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 	public void surfaceDestroyed(SurfaceHolder holder) {
 		boolean retry = true;
 
-		Log.d("DrawingSurface", "surfaceDestroyed");
 		m_drawThread.stopDraw();
 		while (retry) {
 			try {
@@ -109,14 +121,13 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 		}
 	}
 
-	public DrawingPathManager getDrawingPathManager() {
-		return m_drawingPathManager;
+	public Stack<DrawingPath> getDrawingPathStack() {
+		return m_pathStack;
 	}
-
-	public void setDrawingPathManager(DrawingPathManager commandManager) {
-		this.m_drawingPathManager = commandManager;
+	public void setDrawingPathStack(Stack<DrawingPath> pathStack) {
+		this.m_pathStack = pathStack;
 	}
-	class DrawThread extends  Thread{
+	class DrawThread extends Thread {
 		private SurfaceHolder m_SurfaceHolder;
 		private Bitmap m_Bitmap;
 		private Lock m_lock = new ReentrantLock();
@@ -142,7 +153,18 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 			m_lock.unlock();
 		}
 
-		private void drawAll(int bgColor) {
+		private synchronized void drawAllPath(Canvas c) {
+			if( m_pathStack == null ){
+				return;
+			}
+			synchronized( m_pathStack ) {
+				for (Iterator<DrawingPath> i = m_pathStack.iterator(); i.hasNext(); ) {
+					i.next().draw(c);
+				}
+			}
+			
+		}
+		private void drawAll() {
 			Canvas canvas = m_SurfaceHolder.lockCanvas(null);
 			if(m_Bitmap == null){
 				m_Bitmap =  Bitmap.createBitmap (1, 1, Bitmap.Config.ARGB_8888);
@@ -151,10 +173,12 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 			c.drawColor(0, PorterDuff.Mode.CLEAR);
 			canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-			canvas.drawColor(bgColor);
+			canvas.drawColor(m_backgroundColor);
 
-			m_drawingPathManager.drawAllPath(c);
-			m_previewPath.draw(c);
+			drawAllPath(c);
+			if (m_currentDrawingPath != null) {
+				m_currentDrawingPath.draw(c);
+			}
 
 			canvas.drawBitmap (m_Bitmap, 0,  0, null);
 			m_SurfaceHolder.unlockCanvasAndPost(canvas);
@@ -162,26 +186,15 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 		}
 		@Override
 		public void run() {
-			String theme = PreferenceManager.getDefaultSharedPreferences(getContext())
-					.getString("handwriting_theme", "white");
-			int bgColor = Color.WHITE;
-			if (theme.equals("white")) {
-				bgColor = Color.WHITE;
-			} else if (theme.equals("green")) {
-				bgColor = Color.rgb(0x98, 0xFB, 0x98);
-			} else if (theme.equals("blue")) {
-				bgColor = Color.rgb(0x4B, 0x00, 0x82);
-			}
-			drawAll(bgColor);
+			drawAll();
 			Boolean bRunning = true;
 			while (bRunning){
 				try{
 					m_lock.lock();
 					m_condition.await();
 					
-					drawAll(bgColor);
+					drawAll();
 				} catch (InterruptedException e) {
-					Log.e("DrawThread", "interrupted");
 					bRunning = false;
 				} finally {
 					m_lock.unlock();

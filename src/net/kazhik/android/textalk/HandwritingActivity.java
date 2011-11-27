@@ -1,7 +1,7 @@
 package net.kazhik.android.textalk;
 
-import net.kazhik.android.textalk.brush.Brush;
-import net.kazhik.android.textalk.brush.PenBrush;
+import java.util.Stack;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -27,7 +27,6 @@ import android.widget.Button;
  */
 public class HandwritingActivity extends Activity implements View.OnTouchListener{
 	private DrawingSurface m_drawingSurface;
-	private DrawingPath m_currentDrawingPath;
 	private Paint m_currentPaint;
 
 	private boolean m_visible = true;
@@ -35,7 +34,6 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 	private Button m_undoBtn;
 	private Button m_clearBtn;
 
-	private Brush m_currentBrush;
 
 //	private File APP_FILE_PATH = new File("/sdcard/textalk");
 
@@ -46,15 +44,16 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 		setContentView(R.layout.drawing_activity);
 
 		setCurrentPaint();
-		m_currentBrush = new PenBrush();
 
 		m_drawingSurface = (DrawingSurface) findViewById(R.id.drawingSurface);
 		m_drawingSurface.setOnTouchListener(this);
-		m_drawingSurface.setPreviewPath(getPreviewPaint());
+		m_drawingSurface.setPaint(m_currentPaint);
 
-	    final DrawingPathManager cmdMgr = (DrawingPathManager) getLastNonConfigurationInstance();
-	    if (cmdMgr != null) {
-	    	m_drawingSurface.setDrawingPathManager(cmdMgr);
+	    @SuppressWarnings("unchecked")
+		final Stack<DrawingPath> drawingPathStack
+	    	= (Stack<DrawingPath>) getLastNonConfigurationInstance();
+	    if (drawingPathStack != null) {
+	    	m_drawingSurface.setDrawingPathStack(drawingPathStack);
 	    }
 		
 		m_undoBtn = (Button) findViewById(R.id.undoBtn);
@@ -66,8 +65,8 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 	}
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-	    final DrawingPathManager cmdMgr = m_drawingSurface.getDrawingPathManager();
-	    return cmdMgr;
+	    final Stack<DrawingPath> drawingPathStack = m_drawingSurface.getDrawingPathStack();
+	    return drawingPathStack;
 	}
 	public void fixOrientation() {
 		int currentOrientation = getResources().getConfiguration().orientation;
@@ -77,59 +76,49 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		}
 	}
+	private void setTheme() {
+		String theme =
+				PreferenceManager.getDefaultSharedPreferences(this).getString("handwriting_theme", "white");
+		
+		if (theme.equals("white")) {
+			m_currentPaint.setColor(Color.BLACK);
+		} else if (theme.equals("green")) {
+			m_currentPaint.setColor(Color.rgb(0x8B, 0x00, 0x00));
+		} else if (theme.equals("blue")) {
+			m_currentPaint.setColor(Color.rgb(0xFA, 0xFA, 0xD2));
+		} else {
+			m_currentPaint.setColor(Color.BLACK);
+		}
+	}
 	private void setCurrentPaint(){
 		m_currentPaint = new Paint();
 		m_currentPaint.setDither(false);
-		setTheme();
 		m_currentPaint.setStyle(Paint.Style.STROKE);
 		m_currentPaint.setStrokeJoin(Paint.Join.ROUND);
 		m_currentPaint.setStrokeCap(Paint.Cap.ROUND);
 		m_currentPaint.setStrokeWidth(5);
+		setTheme();
 
-	}
-
-	private Paint getPreviewPaint(){
-		return m_currentPaint;
 	}
 
 	@Override
 	public boolean onTouch(View view, MotionEvent motionEvent) {
+		float x = motionEvent.getX();
+		float y = motionEvent.getY();
+		
 		if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-			
-			m_currentDrawingPath = new DrawingPath(m_currentPaint);
-			m_currentBrush.mouseDown(m_currentDrawingPath.getPath(),
-					motionEvent.getX(), motionEvent.getY());
-
-			m_drawingSurface.mouseDown(m_currentBrush, 
-					motionEvent.getX(), motionEvent.getY());
-
-			m_drawingSurface.requestDraw();
-
-			fixOrientation();
+			m_drawingSurface.mouseDown(x, y);
 
 		} else if(motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-			m_currentBrush.mouseMove( m_currentDrawingPath.getPath(),
-					motionEvent.getX(), motionEvent.getY() );
-			m_drawingSurface.mouseMove(m_currentBrush, 
-					motionEvent.getX(), motionEvent.getY());
-			m_drawingSurface.requestDraw();
+			m_drawingSurface.mouseMove(x, y);
 
 		} else if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
-			m_drawingSurface.mouseUp(m_currentBrush, 
-					motionEvent.getX(), motionEvent.getY());
+			m_drawingSurface.mouseUp(x, y);
 
-			m_currentBrush.mouseUp( m_currentDrawingPath.getPath(),
-					motionEvent.getX(), motionEvent.getY() );
-			m_drawingSurface.addDrawingPath(m_currentDrawingPath);
-			
-			m_drawingSurface.requestDraw();
-
-			m_drawingSurface.clearPreviewPath();
 			m_undoBtn.setEnabled(true);
 			m_clearBtn.setEnabled(true);
-
-			fixOrientation();
 		}
+		fixOrientation();
 
 		return true;
 	}
@@ -244,21 +233,6 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 			break;
 		}
 		return ret;
-	}
-	private void setTheme() {
-		String theme =
-				PreferenceManager.getDefaultSharedPreferences(this).getString("handwriting_theme", "white");
-		
-		if (theme.equals("white")) {
-			m_currentPaint.setColor(Color.BLACK);
-		} else if (theme.equals("green")) {
-			m_currentPaint.setColor(Color.rgb(0x8B, 0x00, 0x00));
-		} else if (theme.equals("blue")) {
-			m_currentPaint.setColor(Color.rgb(0xFA, 0xFA, 0xD2));
-		} else {
-			m_currentPaint.setColor(Color.BLACK);
-		}
-		
 	}
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)

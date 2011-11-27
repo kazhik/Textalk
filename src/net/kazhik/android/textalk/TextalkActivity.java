@@ -64,8 +64,6 @@ public class TextalkActivity extends Activity {
 
 		
 		initHistoryView();
-//		createExpressionDialog();
-//		createClearConfirmDialog();
 
 		// 回転時に履歴が消えないようにする
 	    @SuppressWarnings("unchecked")
@@ -310,7 +308,7 @@ public class TextalkActivity extends Activity {
 		menu.add(Menu.NONE, Constants.MENU_ABOUT, Menu.NONE,
 				res.getString(R.string.menu_about, 
 						res.getString(R.string.app_name)))
-						.setIcon(android.R.drawable.ic_dialog_info);
+						.setIcon(android.R.drawable.ic_menu_info_details);
 		return super.onCreateOptionsMenu(menu);
 	}
 
