@@ -33,4 +33,7 @@
     <string name="pref_handwriting_theme_dialogtitle">Color theme</string>
     <string name="pref_handwriting_theme_title">Color theme</string>
     <string name="pref_handwriting_theme_summary">Color theme for handwriting</string>
+    <string name="pref_history_insert_position_dialogtitle">History insert position</string>
+    <string name="pref_history_insert_position_title">History insert position</string>
+    <string name="pref_history_insert_position_summary">Position where the selected result is inserted</string>
 </resources>

@@ -17,6 +17,13 @@
             android:onClick="speakButtonClicked"
             android:text="@string/button_speak" />
         <Button
+            android:id="@+id/clearButton"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="clearButtonClicked"
+            android:text="@string/button_clear" />
+        <Button
             android:id="@+id/expressionButton"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"

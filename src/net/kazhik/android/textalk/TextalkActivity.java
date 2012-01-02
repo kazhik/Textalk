@@ -66,17 +66,23 @@ public class TextalkActivity extends Activity {
 		initHistoryView();
 
 		// 回転時に履歴が消えないようにする
-	    @SuppressWarnings("unchecked")
-		final ArrayAdapter<String> history = (ArrayAdapter<String>) getLastNonConfigurationInstance();
-	    if (history != null) {
-	    	m_speakHistory = history;
-	    }
+		@SuppressWarnings("unchecked")
+		final ArrayList<String> history = (ArrayList<String>) getLastNonConfigurationInstance();
+		if (history != null) {
+			for (Iterator<String> it = history.iterator(); it.hasNext();) {
+				m_speakHistory.add(it.next());
+			}
+		}
 
 	}
 	@Override
 	public Object onRetainNonConfigurationInstance() {
-	    final ArrayAdapter<String> history = m_speakHistory;
-	    return history;
+		int count = m_speakHistory.getCount();
+		final ArrayList<String> speakHistoryList = new ArrayList<String>();
+		for (int i = 0; i < count; i++) {
+			speakHistoryList.add(m_speakHistory.getItem(i));
+		}
+		return speakHistoryList;
 	}
 	private void initHistoryView()
 	{
@@ -130,12 +136,18 @@ public class TextalkActivity extends Activity {
 		}
 		resultView.setAdapter(recogResults);
 		
+		final String insertPosition =
+				PreferenceManager.getDefaultSharedPreferences(this).getString("history_insert_position", "top");
 		AdapterView.OnItemClickListener selectItemListener = new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> items, View view, int position, long id) {
 				ListView listView = (ListView) items;
 				String item = (String) listView.getItemAtPosition(position);
-				m_speakHistory.insert(item,  0);
+				if (insertPosition.equals("top")) {
+					m_speakHistory.insert(item,  0);
+				} else {
+					m_speakHistory.add(item);
+				}
 				
 				m_speakHistory.notifyDataSetChanged();
 				m_expressionTable.updateTimesUsed(item);
@@ -226,6 +238,10 @@ public class TextalkActivity extends Activity {
 	{
 		startVoiceRecognitionActivity();
 	}
+	public void clearButtonClicked(View v)
+	{
+		m_speakHistory.clear();
+	}
 	public void writeButtonClicked(View v)
 	{
 		
@@ -239,6 +255,15 @@ public class TextalkActivity extends Activity {
 		String maxStr =
 				PreferenceManager.getDefaultSharedPreferences(this).getString("expressions_max", "0");
 		int max = Integer.parseInt(maxStr);
+		
+		if (m_expressionTable == null) {
+			return;
+		}
+		
+		ArrayList<String> exList = m_expressionTable.getExpressions(max);
+		if (exList.size() == 0) {
+			return;
+		}
 		
 		if (m_expressionTable.getExpressions(max).size() == 0) {
 			Toast.makeText(TextalkActivity.this, R.string.no_expressions, Toast.LENGTH_LONG).show();

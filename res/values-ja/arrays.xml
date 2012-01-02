@@ -32,4 +32,12 @@
 <item>green</item>
 <item>blue</item>
 </string-array>
+<string-array name="history_insert_position">
+<item>先頭に追加</item>
+<item>末尾に追加</item>
+</string-array>
+<string-array name="history_insert_position_value">
+<item>top</item>
+<item>bottom</item>
+</string-array>
 </resources>
