@@ -130,7 +130,7 @@ public class ExpressionTable {
 		Cursor cursor = qb.query(db, columns, selection, selectionArgs, null,
 				null, sortOrder, limit);
 		
-		if (cursor == null) {
+		if (cursor.getCount() == 0) {
 			return result;
 		}
 		
