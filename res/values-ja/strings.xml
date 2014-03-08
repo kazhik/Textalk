@@ -6,7 +6,7 @@
     <string name="button_write">手書き</string>
     <string name="please_speak">お話しください</string>
     <string name="button_retry">もう一度</string>
-    <string name="button_expression">既入力文</string>
+    <string name="button_expression">履歴</string>
     <string name="menu_settings">設定</string>
     <string name="menu_about">%sについて</string>
     <string name="button_clear">消去</string>
