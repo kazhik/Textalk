@@ -30,8 +30,6 @@ import android.widget.Button;
 public class HandwritingActivity extends Activity implements View.OnTouchListener{
 	private DrawingSurface m_drawingSurface;
 	private Paint m_currentPaint;
-
-	private boolean m_visible = true;
 	
 	private Button m_undoBtn;
 	private Button m_clearBtn;
@@ -70,43 +68,36 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 	    final Stack<DrawingPath> drawingPathStack = m_drawingSurface.getDrawingPathStack();
 	    return drawingPathStack;
 	}
-	private void disableRotation()
-	{       
-	    final int orientation = getResources().getConfiguration().orientation;
-	    final int rotation = getWindowManager().getDefaultDisplay().getOrientation();
 
-	    // Copied from Android docs, since we don't have these values in Froyo 2.2
-	    int SCREEN_ORIENTATION_REVERSE_LANDSCAPE = 8;
-	    int SCREEN_ORIENTATION_REVERSE_PORTRAIT = 9;
+	private void disableRotation() {
+		final int orientation = getResources().getConfiguration().orientation;
+		final int rotation = getWindowManager().getDefaultDisplay()
+				.getOrientation();
 
-	    if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.FROYO)
-	    {
-	        SCREEN_ORIENTATION_REVERSE_LANDSCAPE = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-	        SCREEN_ORIENTATION_REVERSE_PORTRAIT = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-	    }
+		// Copied from Android docs, since we don't have these values in Froyo
+		// 2.2
+		int SCREEN_ORIENTATION_REVERSE_LANDSCAPE = 8;
+		int SCREEN_ORIENTATION_REVERSE_PORTRAIT = 9;
 
-	    if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90)
-	    {
-	        if (orientation == Configuration.ORIENTATION_PORTRAIT)
-	        {
-	            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-	        }
-	        else if (orientation == Configuration.ORIENTATION_LANDSCAPE)
-	        {
-	            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-	        }
-	    }
-	    else if (rotation == Surface.ROTATION_180 || rotation == Surface.ROTATION_270) 
-	    {
-	        if (orientation == Configuration.ORIENTATION_PORTRAIT) 
-	        {
-	            setRequestedOrientation(SCREEN_ORIENTATION_REVERSE_PORTRAIT);
-	        }
-	        else if (orientation == Configuration.ORIENTATION_LANDSCAPE) 
-	        {
-	            	setRequestedOrientation(SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-	        }
-	    }
+		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.FROYO) {
+			SCREEN_ORIENTATION_REVERSE_LANDSCAPE = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+			SCREEN_ORIENTATION_REVERSE_PORTRAIT = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+		}
+
+		if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
+			if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			} else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			}
+		} else if (rotation == Surface.ROTATION_180
+				|| rotation == Surface.ROTATION_270) {
+			if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+				setRequestedOrientation(SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+			} else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+				setRequestedOrientation(SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+			}
+		}
 	}
 
 	private void setTheme() {
@@ -239,14 +230,6 @@ public class HandwritingActivity extends Activity implements View.OnTouchListene
 		menu.add(Menu.NONE, Constants.MENU_SETTING, Menu.NONE, R.string.menu_settings)
 		.setIcon(android.R.drawable.ic_menu_preferences);
 		return super.onCreateOptionsMenu(menu);
-	}
-
-	// オプションメニューが表示される度に呼び出されます
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		menu.findItem(Constants.MENU_SETTING).setVisible(m_visible);
-		m_visible = !m_visible;
-		return super.onPrepareOptionsMenu(menu);
 	}
 
 	// オプションメニューアイテムが選択された時に呼び出されます

@@ -25,7 +25,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -103,15 +102,25 @@ public class TextalkActivity extends Activity {
 		};
 
 		AlertDialog confirmDialog = new AlertDialog.Builder(this)
-		.setMessage(R.string.confirm_clear)
-		.setPositiveButton(android.R.string.ok, okListener)
-		.setNegativeButton(android.R.string.cancel, null)
-		.create();
-		
+				.setMessage(R.string.confirm_clear)
+				.setPositiveButton(android.R.string.ok, okListener)
+				.setNegativeButton(android.R.string.cancel, null).create();
+
 		return confirmDialog;
 	}
 	private void showRecognitionResultDialog(ArrayList<String> results)
 	{
+		// 認識結果を表示するListViewの設定
+		ListView resultView = new ListView(this);
+		resultView.setScrollingCacheEnabled(false);
+
+		ArrayAdapter<String> recogResults = new ArrayAdapter<String>(this,
+				android.R.layout.simple_list_item_1);
+		for (String result: results) {
+			recogResults.add(result);
+		}
+		resultView.setAdapter(recogResults);
+
 		// 再試行ボタン
 		DialogInterface.OnClickListener retryListener = new DialogInterface.OnClickListener() {
 			@Override
@@ -121,41 +130,38 @@ public class TextalkActivity extends Activity {
 		};
 
 		final AlertDialog resultDialog = new AlertDialog.Builder(this)
-		.setPositiveButton(R.string.button_retry, retryListener)
-		.setNegativeButton(android.R.string.cancel, null)
-		.create();
-		
-		// 認識結果を表示するListViewの設定
-		ListView resultView = new ListView(this);
-		resultView.setScrollingCacheEnabled(false);
+				.setPositiveButton(R.string.button_retry, retryListener)
+				.setNegativeButton(android.R.string.cancel, null).create();
 
-		ArrayAdapter<String> recogResults
-			= new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
-		for (Iterator<String> it = results.iterator(); it.hasNext();) {
-			recogResults.add(it.next());
-		}
-		resultView.setAdapter(recogResults);
-		
-		final String insertPosition =
-				PreferenceManager.getDefaultSharedPreferences(this).getString("history_insert_position", "top");
-		AdapterView.OnItemClickListener selectItemListener = new OnItemClickListener() {
+		class SelectResultListener implements AdapterView.OnItemClickListener {
+			private String insertPosition;
 			@Override
-			public void onItemClick(AdapterView<?> items, View view, int position, long id) {
+			public void onItemClick(AdapterView<?> items, View view,
+					int position, long id) {
 				ListView listView = (ListView) items;
 				String item = (String) listView.getItemAtPosition(position);
-				if (insertPosition.equals("top")) {
-					m_speakHistory.insert(item,  0);
+				if (this.insertPosition.equals("top")) {
+					m_speakHistory.insert(item, 0);
 				} else {
 					m_speakHistory.add(item);
 				}
-				
+
 				m_speakHistory.notifyDataSetChanged();
 				m_expressionTable.updateTimesUsed(item);
-				
+
 				resultDialog.dismiss();
 			}
+			public void setInsertPosition(String insertPos) {
+				this.insertPosition = insertPos;
+			}
 		};
-		resultView.setOnItemClickListener(selectItemListener);
+		SelectResultListener selectListener = new SelectResultListener();
+		
+		String insertPos = PreferenceManager.getDefaultSharedPreferences(this)
+				.getString("history_insert_position", "top");
+		selectListener.setInsertPosition(insertPos);
+
+		resultView.setOnItemClickListener(selectListener);
 
 		resultDialog.setView(resultView);
 
