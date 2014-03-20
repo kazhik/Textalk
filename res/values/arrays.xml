@@ -22,16 +22,6 @@
 <item>en</item>
 <item>ja</item>
 </string-array>
-<string-array name="handwriting_themes">
-<item>white</item>
-<item>green</item>
-<item>blue</item>
-</string-array>
-<string-array name="handwriting_themes_value">
-<item>white</item>
-<item>green</item>
-<item>blue</item>
-</string-array>
 <string-array name="history_insert_position">
 <item>insert at top</item>
 <item>insert at bottom</item>

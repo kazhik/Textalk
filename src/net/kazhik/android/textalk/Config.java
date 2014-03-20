@@ -2,27 +2,26 @@ package net.kazhik.android.textalk;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceScreen;
+import android.preference.PreferenceFragment;
 
 public class Config extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+	public static class SettingsFragment extends PreferenceFragment {
+	    @Override
+	    public void onCreate(Bundle savedInstanceState) {
+	        super.onCreate(savedInstanceState);
+
+	        // Load the preferences from an XML resource
+	        addPreferencesFromResource(R.xml.prefs);
+	    }
+	}
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		getFragmentManager().beginTransaction()
+				.replace(android.R.id.content, new SettingsFragment()).commit();
 
-		addPreferencesFromResource(R.xml.prefs);
-	}
-	@Override
-	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen,
-            Preference preference) {
-		
-		if (preference.getKey().equals("pref_expressions_clear")) {
-			setResult(Constants.RESULT_CODE_CLEAR);
-			finish();
-			
-		}
-		return true;
 	}
 
 	@Override

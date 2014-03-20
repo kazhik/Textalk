@@ -6,39 +6,37 @@
     android:orientation="vertical" >
 
     <LinearLayout
+        style="?android:attr/buttonBarStyle"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
         <Button
+            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/speakButton"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="speakButtonClicked"
+            android:onClick="onClickSpeakButton"
             android:text="@string/button_speak" />
-        <Button
-            android:id="@+id/clearButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:onClick="clearButtonClicked"
-            android:text="@string/button_clear" />
-        <Button
-            android:id="@+id/expressionButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:onClick="expressionButtonClicked"
-            android:text="@string/button_expression" />
 
         <Button
+            style="?android:attr/buttonBarButtonStyle"
             android:id="@+id/writeButton"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:onClick="writeButtonClicked"
+            android:onClick="onClickWriteButton"
             android:text="@string/button_write" />
-    </LinearLayout>
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/handwriteButton"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClickHandwriteButton"
+            android:text="@string/button_handwrite" />
+      </LinearLayout>
 
     <ListView
         android:id="@+id/textList"

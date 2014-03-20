@@ -13,7 +13,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
-import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -40,17 +39,7 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 		m_pathStack = new Stack<DrawingPath>();
 
-		String theme = PreferenceManager.getDefaultSharedPreferences(getContext())
-				.getString("handwriting_theme", "white");
-		if (theme.equals("white")) {
-			m_backgroundColor = Color.WHITE;
-		} else if (theme.equals("green")) {
-			m_backgroundColor = Color.rgb(0x98, 0xFB, 0x98);
-		} else if (theme.equals("blue")) {
-			m_backgroundColor = Color.rgb(0x4B, 0x00, 0x82);
-		} else {
-			m_backgroundColor = Color.WHITE;
-		}
+		m_backgroundColor = Color.rgb(0x4B, 0x00, 0x82);
 	}
 	public void mouseDown(float x, float y) {
 		m_currentDrawingPath = new DrawingPath(m_currentPaint);

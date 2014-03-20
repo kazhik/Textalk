@@ -1,44 +1,42 @@
 package net.kazhik.android.textalk;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
+import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
-import android.text.SpannableString;
-import android.text.method.LinkMovementMethod;
-import android.text.util.Linkify;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class TextalkActivity extends Activity {
-	private static final int DIALOG_EXPRESSIONS = 200;
-	private static final int DIALOG_ABOUT = 201;
-	private static final int DIALOG_CLEAR = 202;
+	private static final String KEY_SPEAK_HISTORY = "speak_history";
 	private static final int REQ_SPEAK = 1001;
 	private ArrayAdapter<String> m_speakHistory;
 	private ExpressionTable m_expressionTable;
-	
+
+	private WifiP2pManager m_wifiManager;
+	private WifiP2pManager.Channel m_wifiChannel;
+	private WifiBroadcastReceiver m_wifiReceiver;
+	private IntentFilter m_IntentFilter;
+
 	/**
 	 * 
 	 */
@@ -60,29 +58,43 @@ public class TextalkActivity extends Activity {
 			return;
 		}
 		m_expressionTable = new ExpressionTable(this);
-
 		
 		initHistoryView();
 
-		// 回転時に履歴が消えないようにする
-		@SuppressWarnings("unchecked")
-		final ArrayList<String> history = (ArrayList<String>) getLastNonConfigurationInstance();
-		if (history != null) {
-			for (Iterator<String> it = history.iterator(); it.hasNext();) {
-				m_speakHistory.add(it.next());
+		if (savedInstanceState != null) {
+			ArrayList<String> speakHistory = savedInstanceState
+					.getStringArrayList(KEY_SPEAK_HISTORY);
+			for (String history : speakHistory) {
+				m_speakHistory.add(history);
 			}
 		}
 
+	    m_IntentFilter = new IntentFilter();
+	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+	    
+	    m_wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+	    m_wifiChannel = m_wifiManager.initialize(this, getMainLooper(), null);
+
+		boolean chatWifi = PreferenceManager.getDefaultSharedPreferences(this)
+				.getBoolean("chat_wifi", false);
+		if (chatWifi) {
+		    this.discoverPeers();
+		}
 	}
 	@Override
-	public Object onRetainNonConfigurationInstance() {
+	protected void onSaveInstanceState(Bundle outState) {
+	    super.onSaveInstanceState(outState);
 		int count = m_speakHistory.getCount();
-		final ArrayList<String> speakHistoryList = new ArrayList<String>();
+		ArrayList<String> speakHistoryList = new ArrayList<String>();
 		for (int i = 0; i < count; i++) {
 			speakHistoryList.add(m_speakHistory.getItem(i));
 		}
-		return speakHistoryList;
+	    outState.putStringArrayList(KEY_SPEAK_HISTORY, speakHistoryList);
 	}
+
 	private void initHistoryView()
 	{
 		m_speakHistory = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
@@ -92,7 +104,7 @@ public class TextalkActivity extends Activity {
 		historyView.setAdapter(m_speakHistory);
 
 	}
-	private Dialog createClearConfirmDialog()
+	private void showClearConfirmDialog()
 	{
 		DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
 			@Override
@@ -104,105 +116,37 @@ public class TextalkActivity extends Activity {
 		AlertDialog confirmDialog = new AlertDialog.Builder(this)
 				.setMessage(R.string.confirm_clear)
 				.setPositiveButton(android.R.string.ok, okListener)
-				.setNegativeButton(android.R.string.cancel, null).create();
+				.setNegativeButton(android.R.string.cancel, null)
+				.create();
 
-		return confirmDialog;
+		confirmDialog.show();
 	}
+
 	private void showRecognitionResultDialog(ArrayList<String> results)
 	{
-		// 認識結果を表示するListViewの設定
-		ListView resultView = new ListView(this);
-		resultView.setScrollingCacheEnabled(false);
-
-		ArrayAdapter<String> recogResults = new ArrayAdapter<String>(this,
-				android.R.layout.simple_list_item_1);
-		for (String result: results) {
-			recogResults.add(result);
-		}
-		resultView.setAdapter(recogResults);
-
-		// 再試行ボタン
-		DialogInterface.OnClickListener retryListener = new DialogInterface.OnClickListener() {
+		class SelectTextListener implements RecognitionResultDialog.OnResultListener {
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
+			public void onRetry() {
 				startVoiceRecognitionActivity();
 			}
-		};
-
-		final AlertDialog resultDialog = new AlertDialog.Builder(this)
-				.setPositiveButton(R.string.button_retry, retryListener)
-				.setNegativeButton(android.R.string.cancel, null).create();
-
-		class SelectResultListener implements AdapterView.OnItemClickListener {
-			private String insertPosition;
 			@Override
-			public void onItemClick(AdapterView<?> items, View view,
-					int position, long id) {
-				ListView listView = (ListView) items;
-				String item = (String) listView.getItemAtPosition(position);
-				if (this.insertPosition.equals("top")) {
-					m_speakHistory.insert(item, 0);
-				} else {
-					m_speakHistory.add(item);
-				}
-
-				m_speakHistory.notifyDataSetChanged();
-				m_expressionTable.updateTimesUsed(item);
-
-				resultDialog.dismiss();
+			public void onSelect(String text) {
+				showNewText(text);
 			}
-			public void setInsertPosition(String insertPos) {
-				this.insertPosition = insertPos;
-			}
-		};
-		SelectResultListener selectListener = new SelectResultListener();
-		
-		String insertPos = PreferenceManager.getDefaultSharedPreferences(this)
-				.getString("history_insert_position", "top");
-		selectListener.setInsertPosition(insertPos);
-
-		resultView.setOnItemClickListener(selectListener);
-
-		resultDialog.setView(resultView);
-
-		resultDialog.show();
-		
-	}
-	private Dialog createAboutDialog()
-	{
-		PackageInfo pkgInfo = null;
-		try {
-			pkgInfo = getPackageManager().getPackageInfo(
-					getPackageName(), PackageManager.GET_META_DATA);
-		} catch (NameNotFoundException e) {
-			e.printStackTrace();
-			return null;
+			
 		}
-
-		Resources res = getResources();
-		StringBuffer aboutText = new StringBuffer();
-		aboutText.append(res.getString(R.string.app_name));
-		aboutText.append("\n\n");
-		aboutText.append("Version: " + pkgInfo.versionName);
-		aboutText.append("\n");
-		aboutText.append("Website: github.com/kazhik/Textalk");
-		final SpannableString sstr = new SpannableString(aboutText.toString());
-		Linkify.addLinks(sstr, Linkify.ALL);
-
-		final AlertDialog d = new AlertDialog.Builder(this)
-		.setPositiveButton(android.R.string.ok, null)
-		.setMessage(sstr)
-		.create();
-
-		d.show();
-
-		// Make the textview clickable. Must be called after show()
-		((TextView)d.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+		RecognitionResultDialog resultDialog =
+				RecognitionResultDialog.newInstance(new SelectTextListener(), results);
+		resultDialog.show(getFragmentManager(), "dialog");
+	}
+	private void showAboutDialog() 
+	{
+		AboutDialog aboutDialog = AboutDialog.newInstance();
+		aboutDialog.show(getFragmentManager(), "dialog");
 		
-		return d;
 	}
 	
-	private Dialog createExpressionDialog()
+	private void showExpressionDialog()
 	{
 		final ExpressionDialog expDialog = new ExpressionDialog(this, m_expressionTable);
 		
@@ -219,44 +163,33 @@ public class TextalkActivity extends Activity {
 			}
 		};
 		expDialog.setOnDismissListener(dismissListener);
-		return expDialog;
+		expDialog.show();
 	}
-	@Override
-	protected Dialog onCreateDialog(int id) {
-	    Dialog d = super.onCreateDialog(id);
-	    switch (id) {
-	    case DIALOG_EXPRESSIONS:
-	        d = createExpressionDialog();
-	        break;
-	    case DIALOG_CLEAR:
-	        d = createClearConfirmDialog();
-	        break;
-	    case DIALOG_ABOUT:
-	        d = createAboutDialog();
-	        break;
-	    }
-	    return d;
-	}
-	/**
-	 * Handle the action of the button being clicked
-	 */
-	public void speakButtonClicked(View v)
+	public void onClickSpeakButton(View v)
 	{
 		startVoiceRecognitionActivity();
 	}
-	public void clearButtonClicked(View v)
+	public void onClickWriteButton(View v)
 	{
-		m_speakHistory.clear();
+		class InputMsgListener implements WriteMessageDialog.OnInputListener {
+
+			@Override
+			public void onText(String text) {
+				showNewText(text);
+			}
+			
+		}
+		WriteMessageDialog msgDialog = WriteMessageDialog.newInstance(new InputMsgListener());
+		msgDialog.show(getFragmentManager(), "dialog");
+		
 	}
-	public void writeButtonClicked(View v)
+	public void onClickHandwriteButton(View v)
 	{
 		
 		startActivity(new Intent(TextalkActivity.this, HandwritingActivity.class));
 	}
-	/**
-	 * Handle the action of the button being clicked
-	 */
-	public void expressionButtonClicked(View v)
+
+	private void openHistoryDialog()
 	{
 		String maxStr =
 				PreferenceManager.getDefaultSharedPreferences(this).getString("expressions_max", "0");
@@ -271,17 +204,11 @@ public class TextalkActivity extends Activity {
 			return;
 		}
 		
-		if (m_expressionTable.getExpressions(max).size() == 0) {
+		if (m_expressionTable.getExpressions(max).isEmpty()) {
 			Toast.makeText(TextalkActivity.this, R.string.no_expressions, Toast.LENGTH_LONG).show();
 			return;
 		}
-		showDialog(DIALOG_EXPRESSIONS);
-	}
-	/**
-	 * Handle the action of the button being clicked
-	 */
-	public void freqButtonClicked(View v)
-	{
+		showExpressionDialog();
 	}
 
 	/**
@@ -320,11 +247,6 @@ public class TextalkActivity extends Activity {
 			}
 			showRecognitionResultDialog(results);
 			
-
-		} else if (requestCode == Constants.REQUEST_CODE_SETTINGS) {
-			if (resultCode == Constants.RESULT_CODE_CLEAR) {
-				showDialog(DIALOG_CLEAR);
-			}
 		}
 		
 		super.onActivityResult(requestCode, resultCode, data);
@@ -333,13 +255,25 @@ public class TextalkActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// メニューアイテムを追加します
-		menu.add(Menu.NONE, Constants.MENU_SETTING, Menu.NONE, R.string.menu_settings)
-		.setIcon(android.R.drawable.ic_menu_preferences);
+		menu.add(Menu.NONE, Constants.MENU_SETTING, Menu.NONE,
+				R.string.menu_settings)
+				.setIcon(android.R.drawable.ic_menu_preferences);
+
+		menu.add(Menu.NONE, Constants.MENU_PICK_HISTORY, Menu.NONE,
+				R.string.menu_pick_history);
+		
+		menu.add(Menu.NONE, Constants.MENU_CLEAR_HISTORY, Menu.NONE,
+				R.string.menu_clear_history)
+				.setIcon(android.R.drawable.ic_menu_delete);
+
 		Resources res = getResources();
-		menu.add(Menu.NONE, Constants.MENU_ABOUT, Menu.NONE,
-				res.getString(R.string.menu_about, 
-						res.getString(R.string.app_name)))
-						.setIcon(android.R.drawable.ic_menu_info_details);
+		menu.add(
+				Menu.NONE,
+				Constants.MENU_ABOUT,
+				Menu.NONE,
+				res.getString(R.string.menu_about, res.getString(R.string.app_name))
+			)
+			.setIcon(android.R.drawable.ic_menu_info_details);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -358,11 +292,17 @@ public class TextalkActivity extends Activity {
 		case Constants.MENU_SETTING:
 			intent = new Intent(this, Config.class);
 			intent.setAction(Intent.ACTION_VIEW);
-			startActivityForResult(intent, Constants.REQUEST_CODE_SETTINGS);
+			startActivity(intent);
 			ret = true;
 			break;
+		case Constants.MENU_PICK_HISTORY:
+			openHistoryDialog();
+			break;
+		case Constants.MENU_CLEAR_HISTORY:
+			showClearConfirmDialog();
+			break;
 		case Constants.MENU_ABOUT:
-			showDialog(DIALOG_ABOUT);
+			showAboutDialog();
 			break;
 		default:
 			ret = super.onOptionsItemSelected(item);
@@ -370,5 +310,48 @@ public class TextalkActivity extends Activity {
 		}
 		return ret;
 	}
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(m_wifiReceiver);
 
+	}
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		Log.d("TextalkActivity", "registerReceiver");
+	    m_wifiReceiver = new WifiBroadcastReceiver(m_wifiManager, m_wifiChannel);
+		registerReceiver(m_wifiReceiver, m_IntentFilter);
+
+	}
+	
+	private void discoverPeers() {
+		m_wifiManager.discoverPeers(m_wifiChannel, new WifiP2pManager.ActionListener() {
+
+			@Override
+			public void onSuccess() {
+				Log.d("TextalkActivity", "discoverPeers success");
+			}
+
+			@Override
+			public void onFailure(int reasonCode) {
+				Log.d("TextalkActivity", "discoverPeers failure: " + reasonCode);
+			}
+		});
+	}
+	private void showNewText(String text) {
+		String insertPos = PreferenceManager.getDefaultSharedPreferences(this)
+				.getString("history_insert_position", "top");
+		if (insertPos.equals("top")) {
+			m_speakHistory.insert(text, 0);
+		} else {
+			m_speakHistory.add(text);
+		}
+
+		m_speakHistory.notifyDataSetChanged();
+		m_expressionTable.updateTimesUsed(text);
+	}
+
+	
 }

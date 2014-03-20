@@ -1,31 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="net.kazhik.android.textalk"
-    android:versionCode="6"
-    android:versionName="0.3" >
+    android:versionCode="7"
+    android:versionName="0.4" >
 
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="17"/>
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="19" />
+
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:installLocation="auto"
         android:allowBackup="true"
         android:icon="@drawable/textalk"
+        android:installLocation="auto"
         android:label="@string/app_name" >
         <activity
-            android:label="@string/app_name"
-            android:name=".TextalkActivity" >
-            <intent-filter >
+            android:name=".TextalkActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
-            android:label="@string/activity_name_handwriting"
-            android:name=".HandwritingActivity" >
+            android:name=".HandwritingActivity"
+            android:label="@string/activity_name_handwriting" >
         </activity>
         <activity android:name="Config" >
         </activity>
     </application>
-
 
 </manifest>
