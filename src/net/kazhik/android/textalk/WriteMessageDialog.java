@@ -41,6 +41,7 @@ public class WriteMessageDialog extends DialogFragment implements OnClickListene
 
 		Dialog dlg = new AlertDialog.Builder(activity)
 			.setView(writeMsgView)
+			.setTitle(R.string.write_message)
 			.setPositiveButton(android.R.string.ok, this)
 			.setNegativeButton(android.R.string.cancel, this)
 			.create();

@@ -39,7 +39,8 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 		m_pathStack = new Stack<DrawingPath>();
 
-		m_backgroundColor = Color.rgb(0x4B, 0x00, 0x82);
+//		m_backgroundColor = R.color.textalk_color;
+		m_backgroundColor = Color.WHITE;
 	}
 	public void mouseDown(float x, float y) {
 		m_currentDrawingPath = new DrawingPath(m_currentPaint);

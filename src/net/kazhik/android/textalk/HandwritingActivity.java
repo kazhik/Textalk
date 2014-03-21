@@ -97,7 +97,7 @@ public class HandwritingActivity extends Activity implements
 		m_currentPaint.setStrokeJoin(Paint.Join.ROUND);
 		m_currentPaint.setStrokeCap(Paint.Cap.ROUND);
 		m_currentPaint.setStrokeWidth(5);
-		m_currentPaint.setColor(Color.rgb(0xFA, 0xFA, 0xD2));
+		m_currentPaint.setColor(Color.DKGRAY);
 
 	}
 

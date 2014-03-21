@@ -13,6 +13,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:theme="@style/Textalk"
         android:allowBackup="true"
         android:icon="@drawable/textalk"
         android:installLocation="auto"
