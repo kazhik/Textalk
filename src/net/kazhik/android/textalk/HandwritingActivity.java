@@ -1,5 +1,6 @@
 package net.kazhik.android.textalk;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -7,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -19,7 +19,7 @@ import android.widget.Button;
  * Created by IntelliJ IDEA. User: almondmendoza Date: 07/11/2010 Time: 2:14 AM
  * Link: http://www.tutorialforandroid.com/ Modified by kazhik, 2011.
  */
-public class HandwritingActivity extends FragmentActivity implements
+public class HandwritingActivity extends Activity implements
 		View.OnTouchListener {
 	private DrawingSurface m_drawingSurface;
 	private Paint m_currentPaint;
