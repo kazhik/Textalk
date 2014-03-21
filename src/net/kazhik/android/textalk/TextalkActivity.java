@@ -37,6 +37,7 @@ public class TextalkActivity extends Activity {
 	private WifiBroadcastReceiver m_wifiReceiver;
 	private IntentFilter m_IntentFilter;
 
+	private boolean m_enableWifi = false;
 	/**
 	 * 
 	 */
@@ -69,18 +70,16 @@ public class TextalkActivity extends Activity {
 			}
 		}
 
-	    m_IntentFilter = new IntentFilter();
-	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-	    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-	    
-	    m_wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-	    m_wifiChannel = m_wifiManager.initialize(this, getMainLooper(), null);
-
-		boolean chatWifi = PreferenceManager.getDefaultSharedPreferences(this)
-				.getBoolean("chat_wifi", false);
-		if (chatWifi) {
+		if (m_enableWifi) {
+		    m_IntentFilter = new IntentFilter();
+		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
+		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
+		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
+		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
+		    
+		    m_wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
+		    m_wifiChannel = m_wifiManager.initialize(this, getMainLooper(), null);
+		    
 		    this.discoverPeers();
 		}
 	}
@@ -122,23 +121,6 @@ public class TextalkActivity extends Activity {
 		confirmDialog.show();
 	}
 
-	private void showRecognitionResultDialog(ArrayList<String> results)
-	{
-		class SelectTextListener implements RecognitionResultDialog.OnResultListener {
-			@Override
-			public void onRetry() {
-				startVoiceRecognitionActivity();
-			}
-			@Override
-			public void onSelect(String text) {
-				showNewText(text);
-			}
-			
-		}
-		RecognitionResultDialog resultDialog =
-				RecognitionResultDialog.newInstance(new SelectTextListener(), results);
-		resultDialog.show(getFragmentManager(), "dialog");
-	}
 	private void showAboutDialog() 
 	{
 		AboutDialog aboutDialog = AboutDialog.newInstance();
@@ -211,9 +193,6 @@ public class TextalkActivity extends Activity {
 		showExpressionDialog();
 	}
 
-	/**
-	 * Fire an intent to start the voice recognition activity.
-	 */
 	private void startVoiceRecognitionActivity()
 	{
 		String lang =
@@ -229,7 +208,6 @@ public class TextalkActivity extends Activity {
 		intent.putExtra(RecognizerIntent.EXTRA_PROMPT, R.string.please_speak);
 		startActivityForResult(intent, REQ_SPEAK);
 	}
-
 	/**
 	 * Handle the results from the voice recognition activity.
 	 */
@@ -246,15 +224,31 @@ public class TextalkActivity extends Activity {
 				return;
 			}
 			showRecognitionResultDialog(results);
-			
 		}
 		
 		super.onActivityResult(requestCode, resultCode, data);
 	}
-	// オプションメニューが最初に呼び出される時に1度だけ呼び出されます
+	private void showRecognitionResultDialog(ArrayList<String> results) {
+		class SelectTextListener implements
+				RecognitionResultDialog.OnResultListener {
+			@Override
+			public void onRetry() {
+				startVoiceRecognitionActivity();
+			}
+
+			@Override
+			public void onSelect(String text) {
+				showNewText(text);
+			}
+
+		}
+		RecognitionResultDialog resultDialog = RecognitionResultDialog
+				.newInstance(new SelectTextListener(), results);
+		resultDialog.show(getFragmentManager(), "dialog");
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// メニューアイテムを追加します
 		menu.add(Menu.NONE, Constants.MENU_SETTING, Menu.NONE,
 				R.string.menu_settings)
 				.setIcon(android.R.drawable.ic_menu_preferences);
@@ -277,13 +271,6 @@ public class TextalkActivity extends Activity {
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	// オプションメニューが表示される度に呼び出されます
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		return super.onPrepareOptionsMenu(menu);
-	}
-
-	// オプションメニューアイテムが選択された時に呼び出されます
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		boolean ret = true;
@@ -313,16 +300,19 @@ public class TextalkActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		unregisterReceiver(m_wifiReceiver);
-
+		if (m_enableWifi) {
+			unregisterReceiver(m_wifiReceiver);
+		}
 	}
 	@Override
 	protected void onResume() {
 		super.onResume();
 		
-		Log.d("TextalkActivity", "registerReceiver");
-	    m_wifiReceiver = new WifiBroadcastReceiver(m_wifiManager, m_wifiChannel);
-		registerReceiver(m_wifiReceiver, m_IntentFilter);
+		if (m_enableWifi) {
+			Log.d("TextalkActivity", "registerReceiver");
+		    m_wifiReceiver = new WifiBroadcastReceiver(m_wifiManager, m_wifiChannel);
+			registerReceiver(m_wifiReceiver, m_IntentFilter);
+		}
 
 	}
 	
@@ -352,6 +342,7 @@ public class TextalkActivity extends Activity {
 		m_speakHistory.notifyDataSetChanged();
 		m_expressionTable.updateTimesUsed(text);
 	}
+
 
 	
 }
