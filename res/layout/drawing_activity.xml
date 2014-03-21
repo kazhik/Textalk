@@ -9,34 +9,39 @@
             android:layout_height="match_parent"
             android:id="@+id/drawingSurface"
     />
+
     <LinearLayout
-            android:layout_width="match_parent"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/undoBtn"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-    >
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:text="@string/button_undo" />
+
         <Button
-                android:layout_height="wrap_content"
-                android:layout_width="fill_parent"
-                android:layout_weight="1"
-                android:text="@string/button_undo"
-                android:onClick="onClick"
-                android:id="@+id/undoBtn"
-        />
+            android:id="@+id/clearBtn"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:text="@string/button_clear" />
+
         <Button
-                android:layout_height="wrap_content"
-                android:layout_width="fill_parent"
-                android:layout_weight="1"
-                android:text="@string/button_clear"
-                android:onClick="onClick"
-                android:id="@+id/clearBtn"
-        />
-        <Button
-                android:layout_height="wrap_content"
-                android:layout_width="fill_parent"
-                android:layout_weight="1"
-                android:text="@string/button_close"
-                android:onClick="onClick"
-                android:id="@+id/closeBtn"
-        />
+            android:id="@+id/closeBtn"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClick"
+            android:text="@string/button_close" />
+
         </LinearLayout>
 </RelativeLayout>

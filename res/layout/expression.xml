@@ -6,7 +6,7 @@
  
     <ListView android:id="@+id/expression_list"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dip"
         android:scrollingCache="false"
         android:smoothScrollbar="false"
         android:layout_weight="1" />
@@ -16,7 +16,7 @@
         android:orientation="horizontal">
         
         <Button android:id="@+id/cancelButton"
-            android:layout_width="fill_parent"
+            android:layout_width="0dip"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@android:string/cancel" />
