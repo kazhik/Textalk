@@ -8,26 +8,29 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 /**
  * Created by IntelliJ IDEA. User: almondmendoza Date: 07/11/2010 Time: 2:14 AM
  * Link: http://www.tutorialforandroid.com/ Modified by kazhik, 2011.
  */
 public class HandwritingActivity extends Activity implements
-		View.OnTouchListener {
+		View.OnTouchListener, Handler.Callback {
+
 	private DrawingSurface m_drawingSurface;
 	private Paint m_currentPaint;
 
 	private Button m_undoBtn;
 	private Button m_clearBtn;
-
-	// private File APP_FILE_PATH = new File("/sdcard/textalk");
+	private Button m_saveBtn;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -42,6 +45,8 @@ public class HandwritingActivity extends Activity implements
 
 		m_undoBtn = (Button) findViewById(R.id.undoBtn);
 		m_clearBtn = (Button) findViewById(R.id.clearBtn);
+		m_saveBtn = (Button) findViewById(R.id.saveBtn);
+		
 		this.disableButtons();
 
 	}
@@ -57,6 +62,7 @@ public class HandwritingActivity extends Activity implements
 	private void setButtonEnabled(boolean enabled) {
 		m_undoBtn.setEnabled(enabled);
 		m_clearBtn.setEnabled(enabled);
+		m_saveBtn.setEnabled(enabled);
 	}
 
 	private void disableRotation() {
@@ -108,10 +114,8 @@ public class HandwritingActivity extends Activity implements
 
 		if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
 			m_drawingSurface.mouseDown(x, y);
-
 		} else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
 			m_drawingSurface.mouseMove(x, y);
-
 		} else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
 			m_drawingSurface.mouseUp(x, y);
 
@@ -137,55 +141,39 @@ public class HandwritingActivity extends Activity implements
 			this.disableButtons();
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 			break;
-		case R.id.closeBtn:
-			m_drawingSurface.stopDraw();
-			finish();
+//		case R.id.closeBtn:
+//			m_drawingSurface.stopDraw();
+//			finish();
+//			break;
+		
+		case R.id.saveBtn:
+			new ExportBitmap(this, this,
+					m_drawingSurface.getBitmap()).execute();
 			break;
-		/*
-		 * case R.id.saveBtn: final Activity currentActivity = this; Handler
-		 * saveHandler = new Handler(){
-		 * 
-		 * @Override public void handleMessage(Message msg) {
-		 * Toast.makeText(currentActivity, R.string.file_saved,
-		 * Toast.LENGTH_LONG).show(); } } ; new
-		 * ExportBitmapToFile(this,saveHandler,
-		 * m_drawingSurface.getBitmap()).execute(); break;
-		 */
+		
 		}
 	}
+	@Override
+	protected void onDestroy() {
+		m_drawingSurface.stopDraw();
+		super.onDestroy();
+	}
 
-	/*
-	 * 
-	 * private class ExportBitmapToFile extends AsyncTask<Intent,Void,Boolean> {
-	 * private Handler mHandler; private Bitmap nBitmap;
-	 * 
-	 * public ExportBitmapToFile(Context context,Handler handler,Bitmap bitmap)
-	 * { nBitmap = bitmap; mHandler = handler; }
-	 * 
-	 * @Override protected Boolean doInBackground(Intent... arg0) { try { if
-	 * (!APP_FILE_PATH.exists()) { APP_FILE_PATH.mkdirs(); }
-	 * 
-	 * final FileOutputStream out = new FileOutputStream(new File(APP_FILE_PATH
-	 * + "/myAwesomeDrawing.png")); nBitmap.compress(Bitmap.CompressFormat.PNG,
-	 * 90, out); out.flush(); out.close(); return true; }catch (Exception e) {
-	 * e.printStackTrace(); } return false; }
-	 * 
-	 * 
-	 * @Override protected void onPostExecute(Boolean bool) {
-	 * super.onPostExecute(bool); if ( bool ){ mHandler.sendEmptyMessage(1); } }
-	 * }
-	 */
-	// オプションメニューが最初に呼び出される時に1度だけ呼び出されます
+	@Override
+	public boolean handleMessage(Message msg) {
+		Toast.makeText(this, R.string.file_saved,
+				Toast.LENGTH_LONG).show();
+		return false;
+	}
+	  
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// メニューアイテムを追加します
 		menu.add(Menu.NONE, Constants.MENU_SETTING, Menu.NONE,
 				R.string.menu_settings).setIcon(
 				android.R.drawable.ic_menu_preferences);
 		return super.onCreateOptionsMenu(menu);
 	}
 
-	// オプションメニューアイテムが選択された時に呼び出されます
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		boolean ret = true;

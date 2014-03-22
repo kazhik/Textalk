@@ -15,6 +15,8 @@ import android.graphics.Path;
 public class DrawingPath {
 	private Path m_path;
 	private Paint m_paint;
+	private float m_lastX = 0;
+	private float m_lastY = 0;
 
 	public DrawingPath(Paint paint) {
 		m_paint = paint;
@@ -39,17 +41,19 @@ public class DrawingPath {
 		}
 		canvas.drawPath( m_path, m_paint );
 	}
-	public void mouseDown(float x, float y) {
+	public void setStartPoint(float x, float y) {
 		m_path.moveTo( x, y );
-		m_path.lineTo(x, y);
+		m_lastX = x;
+		m_lastY = y;
 	}
 
-	public void mouseMove(float x, float y) {
-		m_path.lineTo( x, y );
+	public boolean addLine(float x, float y) {
+		if (x != m_lastX || y != m_lastY) {
+			m_path.lineTo( x, y );
+			return true;
+		}
+		return false;
 	}
 
-	public void mouseUp(float x, float y) {
-		m_path.lineTo( x, y );
-	}
 
 }

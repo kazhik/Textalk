@@ -35,13 +35,13 @@
             android:text="@string/button_clear" />
 
         <Button
-            android:id="@+id/closeBtn"
+            android:id="@+id/saveBtn"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
-            android:text="@string/button_close" />
+            android:text="@string/button_save" />
 
         </LinearLayout>
 </RelativeLayout>

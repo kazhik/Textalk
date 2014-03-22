@@ -1,7 +1,6 @@
 package net.kazhik.android.textalk;
 
 import java.util.EmptyStackException;
-import java.util.Iterator;
 import java.util.Stack;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -26,7 +25,7 @@ import android.view.SurfaceView;
  * Modified by kazhik, 2011.
  */
 public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callback {
-	protected DrawThread m_drawThread;
+	private DrawThread m_drawThread;
 	private Stack <DrawingPath> m_pathStack;
 	private DrawingPath m_currentDrawingPath = null;
 	private Paint m_currentPaint;
@@ -39,22 +38,21 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 		m_pathStack = new Stack<DrawingPath>();
 
-//		m_backgroundColor = R.color.textalk_color;
 		m_backgroundColor = Color.WHITE;
 	}
 	public void mouseDown(float x, float y) {
 		m_currentDrawingPath = new DrawingPath(m_currentPaint);
-		m_currentDrawingPath.mouseDown(x, y);
+		m_currentDrawingPath.setStartPoint(x, y);
 		m_drawThread.requestDraw();
 	}
 	public void mouseMove(float x, float y) {
-		m_currentDrawingPath.mouseMove(x, y);
-		m_drawThread.requestDraw();
+		boolean moved = m_currentDrawingPath.addLine(x, y);
+		if (moved) {
+			m_drawThread.requestDraw();
+		}
 	}
 	public void mouseUp(float x, float y) {
-		m_currentDrawingPath.mouseUp(x, y);
 		m_pathStack.push(m_currentDrawingPath);
-		m_drawThread.requestDraw();
 	}
 	public void stopDraw() {
 		m_drawThread.stopDraw();
@@ -81,6 +79,13 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 	public boolean hasStack(){
 		return m_pathStack.size() > 0;
+	}
+
+	public Bitmap getBitmap() {
+		return m_drawThread.getBitmap();
+	}
+	public void setBitmap(Bitmap bmp) {
+		m_drawThread.setBitmap(bmp);
 	}
 
 	@Override
@@ -132,6 +137,13 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 		}
 
+		public Bitmap getBitmap() {
+			return m_Bitmap;
+		}
+		public void setBitmap(Bitmap bmp) {
+			m_Bitmap = bmp;
+		}
+
 		public void stopDraw() {
 			interrupt();
 
@@ -151,28 +163,26 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 				return;
 			}
 			synchronized( m_pathStack ) {
-				for (Iterator<DrawingPath> i = m_pathStack.iterator(); i.hasNext(); ) {
-					i.next().draw(c);
+				for (DrawingPath dpath: m_pathStack) {
+					dpath.draw(c);
 				}
 			}
 
 		}
 		private void drawAll() {
-			Canvas canvas = m_SurfaceHolder.lockCanvas(null);
 			if(m_Bitmap == null){
 				m_Bitmap =  Bitmap.createBitmap (1, 1, Bitmap.Config.ARGB_8888);
 			}
-			final Canvas c = new Canvas (m_Bitmap);
-
+			Canvas c = new Canvas (m_Bitmap);
 			c.drawColor(0, PorterDuff.Mode.CLEAR);
-			canvas.drawColor(0, PorterDuff.Mode.CLEAR);
-			canvas.drawColor(m_backgroundColor);
-
 			drawAllPath(c);
 			if (m_currentDrawingPath != null) {
 				m_currentDrawingPath.draw(c);
 			}
 
+			Canvas canvas = m_SurfaceHolder.lockCanvas(null);
+			canvas.drawColor(0, PorterDuff.Mode.CLEAR);
+			canvas.drawColor(m_backgroundColor);
 			canvas.drawBitmap (m_Bitmap, 0,  0, null);
 			m_SurfaceHolder.unlockCanvasAndPost(canvas);
 
