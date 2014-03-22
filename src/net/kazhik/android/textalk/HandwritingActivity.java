@@ -6,6 +6,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.PointF;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -109,15 +110,14 @@ public class HandwritingActivity extends Activity implements
 
 	@Override
 	public boolean onTouch(View view, MotionEvent motionEvent) {
-		float x = motionEvent.getX();
-		float y = motionEvent.getY();
+		PointF pt = new PointF(motionEvent.getX(), motionEvent.getY());
 
 		if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-			m_drawingSurface.mouseDown(x, y);
+			m_drawingSurface.mouseDown(pt);
 		} else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-			m_drawingSurface.mouseMove(x, y);
+			m_drawingSurface.mouseMove(pt);
 		} else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-			m_drawingSurface.mouseUp(x, y);
+			m_drawingSurface.mouseUp(pt);
 
 			this.enableButtons();
 		}

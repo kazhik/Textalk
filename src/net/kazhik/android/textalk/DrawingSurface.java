@@ -11,6 +11,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PointF;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
@@ -25,8 +27,9 @@ import android.view.SurfaceView;
  * Modified by kazhik, 2011.
  */
 public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callback {
+
 	private DrawThread m_drawThread;
-	private Stack <DrawingPath> m_pathStack;
+	private Stack <Path> m_pathStack;
 	private DrawingPath m_currentDrawingPath = null;
 	private Paint m_currentPaint;
 	private int m_backgroundColor;
@@ -36,23 +39,23 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 
 		getHolder().addCallback(this);
 
-		m_pathStack = new Stack<DrawingPath>();
+		m_pathStack = new Stack<Path>();
 
 		m_backgroundColor = Color.WHITE;
 	}
-	public void mouseDown(float x, float y) {
-		m_currentDrawingPath = new DrawingPath(m_currentPaint);
-		m_currentDrawingPath.setStartPoint(x, y);
+	public void mouseDown(PointF pt) {
+		m_currentDrawingPath = new DrawingPath();
+		m_currentDrawingPath.setStartPoint(pt);
 		m_drawThread.requestDraw();
 	}
-	public void mouseMove(float x, float y) {
-		boolean moved = m_currentDrawingPath.addLine(x, y);
+	public void mouseMove(PointF pt) {
+		boolean moved = m_currentDrawingPath.addLine(pt);
 		if (moved) {
 			m_drawThread.requestDraw();
 		}
 	}
-	public void mouseUp(float x, float y) {
-		m_pathStack.push(m_currentDrawingPath);
+	public void mouseUp(PointF pt) {
+		m_pathStack.push(m_currentDrawingPath.getPath());
 	}
 	public void stopDraw() {
 		m_drawThread.stopDraw();
@@ -116,12 +119,14 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 		}
 	}
 
-	public Stack<DrawingPath> getDrawingPathStack() {
+	public Stack<Path> getDrawingPathStack() {
 		return m_pathStack;
 	}
-	public void setDrawingPathStack(Stack<DrawingPath> pathStack) {
+	public void setDrawingPathStack(Stack<Path> pathStack) {
 		this.m_pathStack = pathStack;
 	}
+	
+
 	class DrawThread extends Thread {
 		private SurfaceHolder m_SurfaceHolder;
 		private Bitmap m_Bitmap;
@@ -163,8 +168,8 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 				return;
 			}
 			synchronized( m_pathStack ) {
-				for (DrawingPath dpath: m_pathStack) {
-					dpath.draw(c);
+				for (Path path: m_pathStack) {
+					c.drawPath(path, m_currentPaint);
 				}
 			}
 
@@ -177,7 +182,7 @@ public class DrawingSurface extends SurfaceView implements SurfaceHolder.Callbac
 			c.drawColor(0, PorterDuff.Mode.CLEAR);
 			drawAllPath(c);
 			if (m_currentDrawingPath != null) {
-				m_currentDrawingPath.draw(c);
+				c.drawPath(m_currentDrawingPath.getPath(), m_currentPaint);
 			}
 
 			Canvas canvas = m_SurfaceHolder.lockCanvas(null);

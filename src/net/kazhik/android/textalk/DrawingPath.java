@@ -1,8 +1,7 @@
 package net.kazhik.android.textalk;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PointF;
 
 /**
  * Created by IntelliJ IDEA.
@@ -14,16 +13,12 @@ import android.graphics.Path;
  */
 public class DrawingPath {
 	private Path m_path;
-	private Paint m_paint;
-	private float m_lastX = 0;
-	private float m_lastY = 0;
+	private PointF m_lastPt;
 
-	public DrawingPath(Paint paint) {
-		m_paint = paint;
+	public DrawingPath() {
 		m_path = new Path();
 	}
 	public DrawingPath(DrawingPath dpath) {
-		m_paint = dpath.m_paint;
 		m_path = dpath.m_path;
 	}
 	public Path getPath() {
@@ -32,24 +27,16 @@ public class DrawingPath {
 	public void clearPath() {
 		m_path.reset();
 	}
-	public void setPait(Paint paint) {
-		this.m_paint = paint;
-	}
-	public void draw(Canvas canvas) {
-		if (m_path.isEmpty()) {
-			return;
-		}
-		canvas.drawPath( m_path, m_paint );
-	}
-	public void setStartPoint(float x, float y) {
-		m_path.moveTo( x, y );
-		m_lastX = x;
-		m_lastY = y;
+
+	public void setStartPoint(PointF pt) {
+		m_path.moveTo( pt.x, pt.y );
+		m_lastPt = pt;
 	}
 
-	public boolean addLine(float x, float y) {
-		if (x != m_lastX || y != m_lastY) {
-			m_path.lineTo( x, y );
+	public boolean addLine(PointF pt) {
+		if (!pt.equals(m_lastPt)) {
+			m_path.lineTo( pt.x, pt.y );
+			m_lastPt = pt;
 			return true;
 		}
 		return false;
