@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.PointF;
 import android.os.Build;
 import android.os.Bundle;
@@ -26,8 +24,7 @@ import android.widget.Toast;
 public class HandwritingActivity extends Activity implements
 		View.OnTouchListener, Handler.Callback {
 
-	private DrawingSurface m_drawingSurface;
-	private Paint m_currentPaint;
+	private HandwritingView m_handwritingView;
 
 	private Button m_undoBtn;
 	private Button m_clearBtn;
@@ -38,11 +35,8 @@ public class HandwritingActivity extends Activity implements
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawing_activity);
 
-		setCurrentPaint();
-
-		m_drawingSurface = (DrawingSurface) findViewById(R.id.drawingSurface);
-		m_drawingSurface.setOnTouchListener(this);
-		m_drawingSurface.setPaint(m_currentPaint);
+		m_handwritingView = (HandwritingView) findViewById(R.id.handwritingView);
+		m_handwritingView.setOnTouchListener(this);
 
 		m_undoBtn = (Button) findViewById(R.id.undoBtn);
 		m_clearBtn = (Button) findViewById(R.id.clearBtn);
@@ -97,27 +91,16 @@ public class HandwritingActivity extends Activity implements
 		}
 	}
 
-	private void setCurrentPaint() {
-		m_currentPaint = new Paint();
-		m_currentPaint.setDither(false);
-		m_currentPaint.setStyle(Paint.Style.STROKE);
-		m_currentPaint.setStrokeJoin(Paint.Join.ROUND);
-		m_currentPaint.setStrokeCap(Paint.Cap.ROUND);
-		m_currentPaint.setStrokeWidth(5);
-		m_currentPaint.setColor(Color.DKGRAY);
-
-	}
-
 	@Override
 	public boolean onTouch(View view, MotionEvent motionEvent) {
 		PointF pt = new PointF(motionEvent.getX(), motionEvent.getY());
 
 		if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-			m_drawingSurface.mouseDown(pt);
+			m_handwritingView.touchDown(pt);
 		} else if (motionEvent.getAction() == MotionEvent.ACTION_MOVE) {
-			m_drawingSurface.mouseMove(pt);
+			m_handwritingView.touchMove(pt);
 		} else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-			m_drawingSurface.mouseUp(pt);
+			m_handwritingView.touchUp(pt);
 
 			this.enableButtons();
 		}
@@ -129,15 +112,15 @@ public class HandwritingActivity extends Activity implements
 	public void onClick(View view) {
 		switch (view.getId()) {
 		case R.id.undoBtn:
-			m_drawingSurface.undo();
-			if (m_drawingSurface.hasStack() == false) {
+			m_handwritingView.undo();
+			if (m_handwritingView.hasStack() == false) {
 				this.disableButtons();
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 			}
 			break;
 
 		case R.id.clearBtn:
-			m_drawingSurface.clear();
+			m_handwritingView.clear();
 			this.disableButtons();
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 			break;
@@ -148,15 +131,10 @@ public class HandwritingActivity extends Activity implements
 		
 		case R.id.saveBtn:
 			new ExportBitmap(this, this,
-					m_drawingSurface.getBitmap()).execute();
+					m_handwritingView.getBitmap()).execute();
 			break;
 		
 		}
-	}
-	@Override
-	protected void onDestroy() {
-		m_drawingSurface.stopDraw();
-		super.onDestroy();
 	}
 
 	@Override
