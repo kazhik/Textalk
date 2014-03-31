@@ -5,16 +5,19 @@
     <string name="button_speak">話す</string>
     <string name="button_write">書く</string>
     <string name="button_handwrite">手書き</string>
-    <string name="please_speak">お話しください</string>
     <string name="button_retry">もう一度</string>
-    <string name="menu_settings">設定</string>
-    <string name="menu_pick_history">履歴から選択</string>
-    <string name="menu_clear_history">履歴の削除</string>
-    <string name="menu_about">%sについて</string>
     <string name="button_clear">消去</string>
     <string name="button_undo">一つ戻す</string>
     <string name="button_save">保存</string>
     <string name="button_close">閉じる</string>
+    <string name="button_connect">Connect</string>
+    <string name="button_disconnect">Disconnect</string>
+    <string name="button_getfile">Launch Gallery</string>
+    <string name="please_speak">お話しください</string>
+    <string name="menu_settings">設定</string>
+    <string name="menu_pick_history">履歴から選択</string>
+    <string name="menu_clear_history">履歴の削除</string>
+    <string name="menu_about">%sについて</string>
     <string name="no_expressions">1件もありません</string>
     <string name="no_results">1件もありません</string>
     <string name="confirm_clear">履歴を消去しますか？</string>
@@ -22,6 +25,9 @@
     <string name="write_message">テキストを入力してください</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>
+    <string name="group_owner_text">"Am I the Group Owner?"</string>
+    <string name="client_text">This device will act as a client. Click on Gallery button to pick a local(stored) file</string>
+    
     <string name="empty_message">No devices found. Turn on P2P and perform discovery from the Action Bar</string>
     <string name="pref_settings_title">設定</string>
     <string name="pref_expressions_settings_title">履歴の設定</string>
@@ -34,7 +40,6 @@
     <string name="pref_recognition_language_dialogtitle">音声認識の言語</string>
     <string name="pref_recognition_language_title">言語</string>
     <string name="pref_recognition_language_summary">音声認識で使われる言語</string>
-    <string name="pref_history_insert_position_dialogtitle">履歴の挿入位置</string>
-    <string name="pref_history_insert_position_title">履歴の挿入位置</string>
-    <string name="pref_history_insert_position_summary">履歴を挿入する位置</string>
+
+    
 </resources>

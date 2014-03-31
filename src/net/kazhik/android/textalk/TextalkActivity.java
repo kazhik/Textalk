@@ -1,19 +1,20 @@
 package net.kazhik.android.textalk;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import net.kazhik.android.textalk.chat.ChatAdapter;
+import net.kazhik.android.textalk.chat.ChatManager;
+import net.kazhik.android.textalk.chat.ChatMessage;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
@@ -21,33 +22,26 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class TextalkActivity extends Activity {
+public class TextalkActivity extends Activity implements ChatManager.ReceiveMessageListener {
 	private static final String KEY_SPEAK_HISTORY = "speak_history";
 	private static final int REQ_SPEAK = 1001;
-	private ArrayAdapter<String> m_speakHistory;
+	private ChatAdapter chatHistory;
 	private ExpressionTable m_expressionTable;
+	private static final String TAG = "TextalkActivity";
+	private String myname;
 
-	private WifiP2pManager m_wifiManager;
-	private WifiP2pManager.Channel m_wifiChannel;
-	private WifiBroadcastReceiver m_wifiReceiver;
-	private IntentFilter m_IntentFilter;
-
-	private boolean m_enableWifi = false;
-	/**
-	 * 
-	 */
+	private ChatManager chatManager;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.textalk);
 
-		// 音声認識機能がない場合は「話す」ボタンを無効化
 		Button speakButton = (Button) findViewById(R.id.speakButton);
 		PackageManager pm = getPackageManager();
 		List<ResolveInfo> activities = pm.queryIntentActivities(
@@ -60,49 +54,35 @@ public class TextalkActivity extends Activity {
 		}
 		m_expressionTable = new ExpressionTable(this);
 		
-		initHistoryView();
-
+		this.chatHistory = new ChatAdapter(this);
+		
 		if (savedInstanceState != null) {
-			ArrayList<String> speakHistory = savedInstanceState
-					.getStringArrayList(KEY_SPEAK_HISTORY);
-			for (String history : speakHistory) {
-				m_speakHistory.add(history);
-			}
+			ArrayList<ChatMessage> history = savedInstanceState
+					.getParcelableArrayList(KEY_SPEAK_HISTORY);
+			this.chatHistory.setMessageList(history);
 		}
+		ListView historyView = (ListView) findViewById(R.id.textList);
 
-		if (m_enableWifi) {
-		    m_IntentFilter = new IntentFilter();
-		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-		    m_IntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
-		    
-		    m_wifiManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
-		    m_wifiChannel = m_wifiManager.initialize(this, getMainLooper(), null);
-		    
-		    this.discoverPeers();
-		}
+		historyView.setAdapter(this.chatHistory);
+		
+		this.myname =
+				PreferenceManager.getDefaultSharedPreferences(this).getString("myname", "Textalk");
+
+		this.chatManager = new ChatManager(this, this);
+		this.chatManager.init(this.myname);
+
 	}
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 	    super.onSaveInstanceState(outState);
-		int count = m_speakHistory.getCount();
-		ArrayList<String> speakHistoryList = new ArrayList<String>();
+		int count = this.chatHistory.getCount();
+		ArrayList<ChatMessage> speakHistoryList = new ArrayList<ChatMessage>();
 		for (int i = 0; i < count; i++) {
-			speakHistoryList.add(m_speakHistory.getItem(i));
+			speakHistoryList.add((ChatMessage)this.chatHistory.getItem(i));
 		}
-	    outState.putStringArrayList(KEY_SPEAK_HISTORY, speakHistoryList);
+		outState.putParcelableArrayList(KEY_SPEAK_HISTORY, speakHistoryList);
 	}
 
-	private void initHistoryView()
-	{
-		m_speakHistory = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
-		
-		ListView historyView = (ListView) findViewById(R.id.textList);
-
-		historyView.setAdapter(m_speakHistory);
-
-	}
 	private void showClearConfirmDialog()
 	{
 		DialogInterface.OnClickListener okListener = new DialogInterface.OnClickListener() {
@@ -136,10 +116,8 @@ public class TextalkActivity extends Activity {
 			@Override
 			public void onDismiss(DialogInterface dialog) {
 				String selectedStr = expDialog.getSelectedStr();
-				if (selectedStr.length() > 0) {
-					m_expressionTable.updateTimesUsed(selectedStr);
-					m_speakHistory.insert(selectedStr, 0);
-					m_speakHistory.notifyDataSetChanged();
+				if (!selectedStr.isEmpty()) {
+					showNewText(selectedStr);
 					expDialog.setSelectedStr("");
 				}
 			}
@@ -300,49 +278,52 @@ public class TextalkActivity extends Activity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		if (m_enableWifi) {
-			unregisterReceiver(m_wifiReceiver);
-		}
+		this.chatManager.pause();
 	}
 	@Override
 	protected void onResume() {
 		super.onResume();
-		
-		if (m_enableWifi) {
-			Log.d("TextalkActivity", "registerReceiver");
-		    m_wifiReceiver = new WifiBroadcastReceiver(m_wifiManager, m_wifiChannel);
-			registerReceiver(m_wifiReceiver, m_IntentFilter);
-		}
-
+		this.chatManager.resume();
 	}
-	
-	private void discoverPeers() {
-		m_wifiManager.discoverPeers(m_wifiChannel, new WifiP2pManager.ActionListener() {
+	private void showChatMessage(ChatMessage msg) {
+		class ShowChatMessage implements Runnable {
+			private ChatAdapter chatAdapter;
+			private ChatMessage msg;
 
-			@Override
-			public void onSuccess() {
-				Log.d("TextalkActivity", "discoverPeers success");
+			public ShowChatMessage(ChatAdapter chatAdapter, ChatMessage msg) {
+				this.chatAdapter = chatAdapter;
+				this.msg = msg;
 			}
 
 			@Override
-			public void onFailure(int reasonCode) {
-				Log.d("TextalkActivity", "discoverPeers failure: " + reasonCode);
+			public void run() {
+				this.chatAdapter.addMessage(msg);
 			}
-		});
+			
+		}
+		this.runOnUiThread(new ShowChatMessage(this.chatHistory, msg));
+
 	}
 	private void showNewText(String text) {
-		String insertPos = PreferenceManager.getDefaultSharedPreferences(this)
-				.getString("history_insert_position", "top");
-		if (insertPos.equals("top")) {
-			m_speakHistory.insert(text, 0);
-		} else {
-			m_speakHistory.add(text);
+		try {
+			this.chatManager.broadcastMessage(text);
+		} catch (IOException e) {
+			Log.e(TAG, "broadcast text", e);
 		}
+		this.showChatMessage(new ChatMessage(ChatMessage.SENT, this.myname, text));
 
-		m_speakHistory.notifyDataSetChanged();
 		m_expressionTable.updateTimesUsed(text);
+		
 	}
-
-
+	@Override
+	public void onConnected(String ipaddr, String name) {
+		String msg = "Connected from " + ipaddr;
+		this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, name, msg));
+	}
+	@Override
+	public void onMessage(String name, String msg) {
+		this.showChatMessage(new ChatMessage(ChatMessage.RECEIVED, name, msg));
+		
+	}
 	
 }
