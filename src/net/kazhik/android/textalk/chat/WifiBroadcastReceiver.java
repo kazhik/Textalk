@@ -45,7 +45,6 @@ public class WifiBroadcastReceiver extends BroadcastReceiver {
 			}
 
 		} else if (WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-			Log.d("WifiBroadcastReceiver", "peers changed");
 			if (apiVer >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR2) {
 				WifiP2pDeviceList deviceList =
 						intent.getParcelableExtra(WifiP2pManager.EXTRA_P2P_DEVICE_LIST);

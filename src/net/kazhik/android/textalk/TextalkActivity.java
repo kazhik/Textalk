@@ -8,6 +8,7 @@ import java.util.Locale;
 import net.kazhik.android.textalk.chat.ChatAdapter;
 import net.kazhik.android.textalk.chat.ChatManager;
 import net.kazhik.android.textalk.chat.ChatMessage;
+import net.kazhik.android.textalk.chat.ChatConnection;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -284,6 +285,7 @@ public class TextalkActivity extends Activity implements ChatManager.ReceiveMess
 	protected void onResume() {
 		super.onResume();
 		this.chatManager.resume();
+
 	}
 	private void showChatMessage(ChatMessage msg) {
 		class ShowChatMessage implements Runnable {

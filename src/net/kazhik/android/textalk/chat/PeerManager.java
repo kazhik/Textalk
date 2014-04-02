@@ -8,16 +8,20 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.net.wifi.WpsInfo;
+import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pGroup;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.WifiP2pManager.ActionListener;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class PeerManager implements WifiBroadcastReceiver.WifiListener,
-		UdpManager.HostListener, WifiP2pManager.PeerListListener {
+		UdpManager.HostListener, WifiP2pManager.PeerListListener,
+		WifiP2pManager.ConnectionInfoListener {
 
 	public interface PeerListener {
 		void onNewHost(String addr, String name);
@@ -47,7 +51,7 @@ public class PeerManager implements WifiBroadcastReceiver.WifiListener,
 	public void init(String myname) {
 		SharedPreferences prefs =
 				PreferenceManager.getDefaultSharedPreferences(this.context);
-		this.networkMode = prefs.getString("network_mode", "udp");
+		this.networkMode = prefs.getString("network_mode", "wifiP2P");
 		
 		this.myname = myname;
 		
@@ -88,13 +92,14 @@ public class PeerManager implements WifiBroadcastReceiver.WifiListener,
 
 	@Override
 	public void onWifiP2PEnabled() {
-		// TODO Auto-generated method stub
+		Log.d(TAG, "Wifi P2P enabled");
+	    this.discoverPeers();
 		
 	}
 
 	@Override
 	public void onWifiP2pDisabled() {
-		// TODO Auto-generated method stub
+		Log.d(TAG, "Wifi P2P disabled");
 		
 	}
 
@@ -104,56 +109,95 @@ public class PeerManager implements WifiBroadcastReceiver.WifiListener,
 			this.wifiP2pManager.requestPeers(m_wifiChannel, this);
 			return;
 
-		}
-		for (WifiP2pDevice device: deviceList.getDeviceList()) {
-			Log.d("TextalkActivity#onPeersChanged", "device:" + device.deviceName);
+		} else {
+			for (WifiP2pDevice device: deviceList.getDeviceList()) {
+				Log.d("TextalkActivity#onPeersChanged", "device:" + device.deviceName);
+			}
 		}
 		
+	}
+	@Override
+	public void onPeersAvailable(WifiP2pDeviceList peers) {
+		for (WifiP2pDevice peer: peers.getDeviceList()) {
+			Log.d(TAG, "DeviceName: " + peer.deviceName + "; status: " + peer.status);
+			if (peer.status == WifiP2pDevice.AVAILABLE) {
+				this.connect(peer);
+			}
+		}
+		
+	}
+
+	private void connect(WifiP2pDevice peer) {
+
+		WifiP2pConfig config = new WifiP2pConfig();
+		config.deviceAddress = peer.deviceAddress;
+		config.wps.setup = WpsInfo.PBC;
+
+		this.wifiP2pManager.connect(this.m_wifiChannel, config,
+				new ActionListener() {
+
+					@Override
+					public void onSuccess() {
+					}
+
+					@Override
+					public void onFailure(int reason) {
+						Log.e(TAG, "Failed to connect: " + reason);
+					}
+				});
 	}
 
 	@Override
 	public void onConnectionChanged(WifiP2pInfo p2pInfo,
 			NetworkInfo networkInfo, WifiP2pGroup p2pGroup) {
-		// TODO Auto-generated method stub
-		
+
+		if (p2pGroup != null) {
+			Log.d(TAG, "P2pGroup: " + p2pGroup.toString());
+		}
+		Log.d(TAG, "WifiP2pInfo: " + p2pInfo.toString());
+		if (networkInfo.isConnected()) {
+			this.wifiP2pManager.requestConnectionInfo(this.m_wifiChannel, this);
+		}
+
+	}
+	// WifiP2pManager.ConnectionInfoListener
+	@Override
+	public void onConnectionInfoAvailable(WifiP2pInfo info) {
+		Log.d(TAG, "onConnectionInfoAvailable/WifiP2pInfo: " + info.toString());
+		this.listener.onNewHost(info.groupOwnerAddress.getHostAddress(), "");
 	}
 
 	@Override
 	public void onThisDeviceChanged(WifiP2pDevice p2pDevice) {
-		// TODO Auto-generated method stub
+		Log.d(TAG, "This Device: " + p2pDevice.deviceName);
 		
 	}
 	private void discoverPeers() {
-		this.wifiP2pManager.discoverPeers(m_wifiChannel, new WifiP2pManager.ActionListener() {
+		this.wifiP2pManager.discoverPeers(m_wifiChannel,
+				new WifiP2pManager.ActionListener() {
 
-			@Override
-			public void onSuccess() {
-				Log.d("TextalkActivity", "discoverPeers success");
-			}
+					@Override
+					public void onSuccess() {
+					}
 
-			@Override
-			public void onFailure(int reasonCode) {
-				Log.d("TextalkActivity", "discoverPeers failure: " + reasonCode);
-			}
-		});
+					@Override
+					public void onFailure(int reasonCode) {
+						Log.d("TextalkActivity", "discoverPeers failure: "
+								+ reasonCode);
+					}
+				});
 	}	
-	public void onResume() {
+	public void resume() {
 		if (this.networkMode.equals("wifiP2P")) {
 		    m_wifiReceiver = new WifiBroadcastReceiver(this);
 			this.context.registerReceiver(m_wifiReceiver, m_IntentFilter);
 		} else if (this.networkMode.equals("udp")) {
 		}
 	}
-	public void onPause() {
+	public void pause() {
 		if (this.networkMode.equals("wifiP2P")) {
 			this.context.unregisterReceiver(m_wifiReceiver);
 		} else if (this.networkMode.equals("udp")) {
 		}
 	}
-	@Override
-	public void onPeersAvailable(WifiP2pDeviceList peers) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

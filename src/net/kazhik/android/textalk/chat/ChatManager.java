@@ -1,6 +1,7 @@
 package net.kazhik.android.textalk.chat;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,16 +47,13 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		if (conn != null && conn.isConnected()) {
 			Log.i(TAG, "Already connected: " + ipaddr);
 			conn.setName(name);
-			this.m_clients.put(ipaddr, conn);
-			return;
+		} else {
+			conn = new ChatConnection(new Socket(), ipaddr, name, this);
+			this.m_clientConnect.submit(conn);
+			Log.d(TAG, "ChatManager#connect: connected with " + ipaddr);
 		}
-		
-		ChatConnection client = new ChatConnection(new Socket(), name, this);
-		client.connect();
-		this.m_clientConnect.submit(client);
-		this.m_clients.put(ipaddr, client);
+		this.m_clients.put(ipaddr, conn);
 
-		Log.d(TAG, "ChatManager#connect: connected with " + ipaddr);
 	}
 	@Override
 	public void onClientConnected(Socket clientSocket) {
@@ -64,7 +62,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 			Log.i(TAG, "Already connected: " + addr);
 			return;
 		}
-		ChatConnection client = new ChatConnection(clientSocket, addr, this);
+		ChatConnection client = new ChatConnection(clientSocket, addr, addr, this);
 
 		this.m_clientConnect.submit(client);
 		this.m_clients.put(addr, client);
@@ -86,7 +84,6 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		for (ChatConnection client: this.m_clients.values()) {
 			client.close();
 			client.setMode(mode);
-			client.connect();
 			this.m_clientConnect.submit(client);
 		}
 		return true;
@@ -114,10 +111,10 @@ public class ChatManager implements ChatServer.ConnectionListener,
 	}
 
 	public void pause() {
-		this.peerManager.onPause();
+		this.peerManager.pause();
 	}
 	public void resume() {
-		this.peerManager.onResume();
+		this.peerManager.resume();
 	}
 	@Override
 	public void onNewHost(String addr, String name) {

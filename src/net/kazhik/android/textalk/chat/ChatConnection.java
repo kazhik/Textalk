@@ -14,7 +14,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-class ChatConnection implements Runnable {
+public class ChatConnection implements Runnable {
 	public interface MessageListener {
 		void onNewMessage(String addr, String msg);
 	}
@@ -34,13 +34,13 @@ class ChatConnection implements Runnable {
 	private static final String TAG = "ChatConnection";
 
 	
-	public ChatConnection(Socket socket, String name, MessageListener listener) {
+	public ChatConnection(Socket socket, String addr, String name, MessageListener listener) {
 		this.socket = socket;
+		this.addr = addr;
 		this.name = name;
-		this.addr = socket.getInetAddress().getHostAddress();
 		this.msgListener = listener;
 	}
-	public void connect() {
+	private void connect() {
 		try {
 			this.socket.connect(new InetSocketAddress(this.addr, ChatServer.PORT));
 		} catch (IOException e) {
@@ -92,6 +92,9 @@ class ChatConnection implements Runnable {
 	
 	@Override
 	public void run() {
+		if (!this.socket.isConnected()) {
+			this.connect();
+		}
 		InputStream is;
 		try {
 			is = this.socket.getInputStream();

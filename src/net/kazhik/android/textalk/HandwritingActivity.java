@@ -3,12 +3,12 @@ package net.kazhik.android.textalk;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
+import android.graphics.Point;
 import android.graphics.PointF;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -60,34 +60,40 @@ public class HandwritingActivity extends Activity implements
 		m_saveBtn.setEnabled(enabled);
 	}
 
-	private void disableRotation() {
-		final int orientation = getResources().getConfiguration().orientation;
-		final int rotation = getWindowManager().getDefaultDisplay()
-				.getRotation();
-
-		// Copied from Android docs, since we don't have these values in Froyo
-		// 2.2
-		int SCREEN_ORIENTATION_REVERSE_LANDSCAPE = 8;
-		int SCREEN_ORIENTATION_REVERSE_PORTRAIT = 9;
-
-		if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.FROYO) {
-			SCREEN_ORIENTATION_REVERSE_LANDSCAPE = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-			SCREEN_ORIENTATION_REVERSE_PORTRAIT = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-		}
-
-		if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_90) {
-			if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-			} else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+	// http://stackoverflow.com/questions/3611457/android-temporarily-disable-orientation-changes-in-an-activity
+	private void lockOrientation() {
+		Display display = getWindowManager().getDefaultDisplay();
+		int rotation = display.getRotation();
+		int height;
+		int width;
+		Point size = new Point();
+		display.getSize(size);
+		height = size.y;
+		width = size.x;
+		switch (rotation) {
+		case Surface.ROTATION_90:
+			if (width > height)
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-			}
-		} else if (rotation == Surface.ROTATION_180
-				|| rotation == Surface.ROTATION_270) {
-			if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-				setRequestedOrientation(SCREEN_ORIENTATION_REVERSE_PORTRAIT);
-			} else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-				setRequestedOrientation(SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
-			}
+			else
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+			break;
+		case Surface.ROTATION_180:
+			if (height > width)
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT);
+			else
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+			break;
+		case Surface.ROTATION_270:
+			if (width > height)
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+			else
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			break;
+		default:
+			if (height > width)
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			else
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 		}
 	}
 
@@ -104,7 +110,8 @@ public class HandwritingActivity extends Activity implements
 
 			this.enableButtons();
 		}
-		disableRotation();
+		//disableRotation();
+		this.lockOrientation();
 
 		return true;
 	}
