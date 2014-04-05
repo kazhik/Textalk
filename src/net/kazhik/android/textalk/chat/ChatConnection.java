@@ -17,6 +17,7 @@ import android.util.Log;
 public class ChatConnection implements Runnable {
 	public interface MessageListener {
 		void onNewMessage(String addr, String msg);
+		void onClosed(String addr);
 	}
 	public interface BitmapListener {
 		void onNewBitmap(String addr, Bitmap bmp);
@@ -67,27 +68,30 @@ public class ChatConnection implements Runnable {
 	public void setMode(Mode mode) {
 		this.mode = mode;
 	}
-	private void receiveBinaryData(InputStream is) throws IOException {
+	private boolean receiveBinaryData(InputStream is) throws IOException {
 		Log.i(TAG, "Waiting data from: " + this.socket.getInetAddress().getHostAddress());
 		byte[] recvBuff = new byte[1024*1024];
 		int recvSize = is.read(recvBuff);
+		if (recvSize == -1) {
+			return false;
+		}
 		
 		Bitmap bmp = BitmapFactory.decodeByteArray(recvBuff, 0, recvSize);
 		this.bmpListener.onNewBitmap(this.addr, bmp);
-		
+		return true;
 	}
-	private void receiveTextMessage(InputStream is) throws IOException {
+	private boolean receiveTextMessage(InputStream is) throws IOException {
 		Log.i(TAG, "Waiting message from: " + this.socket.getInetAddress().getHostAddress());
 		InputStreamReader isr = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(isr);
 		
 		String msg = br.readLine();
-		if (msg != null && !msg.isEmpty()) {
-			Log.i(TAG, "Received: " + msg);
-			this.msgListener.onNewMessage(this.addr, msg);
-			Log.i(TAG, "Called listener");
+		if (msg == null) {
+			return false;
 		}
-		
+		Log.i(TAG, "Received: " + msg);
+		this.msgListener.onNewMessage(this.addr, msg);
+		return true;
 	}
 	
 	@Override
@@ -98,11 +102,18 @@ public class ChatConnection implements Runnable {
 		InputStream is;
 		try {
 			is = this.socket.getInputStream();
+			boolean bRet;
 			while (this.socket.isConnected()) {
 				if (this.mode == Mode.TEXT) {
-					this.receiveTextMessage(is);
+					bRet = this.receiveTextMessage(is);
 				} else {
-					this.receiveBinaryData(is);
+					bRet = this.receiveBinaryData(is);
+				}
+				if (!bRet) {
+					Log.i(TAG, "Connection closed");
+					this.socket.close();
+					this.msgListener.onClosed(this.addr);
+					break;
 				}
 			}
 		} catch (IOException e) {

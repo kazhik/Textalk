@@ -11,11 +11,13 @@ public class ChatMessage implements Parcelable {
 	private int type;
 	private String sender;
 	private String message;
+	private long sendTime;
 
 	public ChatMessage(int type, String sender, String msg) {
 		this.type = type;
 		this.sender = sender;
 		this.message = msg;
+		this.sendTime = System.currentTimeMillis();
 	}
     private ChatMessage(Parcel in) {
 		this.type = in.readInt();
@@ -23,13 +25,14 @@ public class ChatMessage implements Parcelable {
 		in.readStringArray(strArray);
 		this.sender = strArray[0];
 		this.message = strArray[1];
+		this.sendTime = in.readLong();
     }
 	public boolean isSent() {
 		return (this.type == SENT);
 	}
 
 	public String getMessage() {
-		return message;
+		return this.message;
 	}
 
 	public void setMessage(String message) {
@@ -38,10 +41,13 @@ public class ChatMessage implements Parcelable {
 	}
 
 	public String getSender() {
-		return sender;
+		return this.sender;
 	}
 	public void setSender(String sender) {
 		this.sender = sender;
+	}
+	public long getSendTime() {
+		return this.sendTime;
 	}
 	@Override
 	public int describeContents() {

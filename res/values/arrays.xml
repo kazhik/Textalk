@@ -30,4 +30,13 @@
 <item>top</item>
 <item>bottom</item>
 </string-array>
+<string-array name="network_mode">
+<item>UDP</item>
+<item>WiFi P2P</item>
+</string-array>
+<string-array name="network_mode_value">
+<item>udp</item>
+<item>wifi_p2p</item>
+</string-array>
+
 </resources>

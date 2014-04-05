@@ -2,7 +2,6 @@ package net.kazhik.android.textalk.chat;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -80,7 +79,7 @@ public class ChatAdapter extends BaseAdapter {
 		String sender = message.getSender();
 		
 		DateFormat df = DateFormat.getTimeInstance(DateFormat.DEFAULT, Locale.getDefault());
-		String timeText = df.format(Calendar.getInstance().getTime());
+		String timeText = df.format(message.getSendTime());
 		
 		String infoTxt = "(" + sender + "/" + timeText + ")";
 		

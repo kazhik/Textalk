@@ -1,7 +1,6 @@
 package net.kazhik.android.textalk.chat;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +39,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		this.peerManager.init(myname);
 		
 		this.m_serverConnect.submit(new ChatServer(this));
+		
 	}
 	
 	public void connect(String ipaddr, String name) {
@@ -121,5 +121,9 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		Log.d(TAG, "ChatManager#onNewHost: " + addr + "; name: " + name);
 		this.connect(addr, name);
 		this.m_listener.onConnected(addr, name);
+	}
+	@Override
+	public void onClosed(String addr) {
+		this.m_clients.remove(addr);
 	}
 }

@@ -1,7 +1,6 @@
 package net.kazhik.android.textalk.chat;
 
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -13,14 +12,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import android.content.Context;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
 public class UdpManager implements UdpReceiver.MessageListener {
-	public interface HostListener {
-		void onNewHost(String addr, String name);
-		void onHostDead(String addr);
-	}
+
 	private ScheduledExecutorService m_sender =
 			Executors.newScheduledThreadPool(1);
 	private ExecutorService m_receiver =
@@ -33,12 +30,15 @@ public class UdpManager implements UdpReceiver.MessageListener {
 	private UdpReceiver m_receiveTask;
 	private static final int BUFFSIZE = 128;
 	private static final String TAG = "UdpManager";
-	private HostListener m_listener;
+	private ConnectionListener m_listener;
 	
-	public void start(WifiManager wifiMgr, String sendData, HostListener listener) {
+	public void start(Context context, String sendData, ConnectionListener listener) {
 		m_listener = listener;
 		
-		m_localAddr = this.getLocalWifiAddress(wifiMgr);
+		WifiManager wifiManager =
+				(WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+		
+		m_localAddr = this.convertIpAddr(wifiManager.getConnectionInfo().getIpAddress());
 		if (m_localAddr == null) {
 			Log.e(TAG, "Failed to get My Address");
 			return;
@@ -54,9 +54,7 @@ public class UdpManager implements UdpReceiver.MessageListener {
 		m_receiver.shutdown();
 	}
 	// http://stackoverflow.com/questions/16730711/get-my-wifi-ip-address-android
-	private InetAddress getLocalWifiAddress(WifiManager wifiMgr) {
-		int ipAddress = wifiMgr.getConnectionInfo().getIpAddress();
-
+	private InetAddress convertIpAddr(int ipAddress) {
 		// Convert little-endian to big-endianif needed
 		if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
 			ipAddress = Integer.reverseBytes(ipAddress);
@@ -119,20 +117,6 @@ public class UdpManager implements UdpReceiver.MessageListener {
 		// broadcasts in every 10 seconds
 		m_sender.scheduleAtFixedRate(broadcast, 0, 10, TimeUnit.SECONDS);
 
-	}
-	
-	private String convert(byte[] data) {
-		String str = "";
-		int i;
-		for (i = 0; i < data.length && data[i] != 0x00; i++) {
-		}
-		try {
-			str = new String(data, 0, i, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, "UnsupportedEncodingException", e);
-		}
-		return str;
-		
 	}
 	
 	@Override

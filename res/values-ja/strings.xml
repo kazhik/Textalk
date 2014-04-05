@@ -27,8 +27,9 @@
     <string name="label_peers">PEERS</string>
     <string name="group_owner_text">"Am I the Group Owner?"</string>
     <string name="client_text">This device will act as a client. Click on Gallery button to pick a local(stored) file</string>
-    
     <string name="empty_message">No devices found. Turn on P2P and perform discovery from the Action Bar</string>
+    <string name="connected">%1$sと接続しました</string>
+    
     <string name="pref_settings_title">設定</string>
     <string name="pref_expressions_settings_title">履歴の設定</string>
     <string name="pref_expressions_max_dialogtitle">履歴の最大表示数</string>
@@ -41,5 +42,10 @@
     <string name="pref_recognition_language_title">言語</string>
     <string name="pref_recognition_language_summary">音声認識で使われる言語</string>
 
+    <string name="pref_network_settings_title">ネットワーク</string>
+    <string name="pref_network_mode_title">接続方法</string>
+    <string name="pref_network_mode_summary">通信相手との接続方法</string>
+    <string name="pref_myname_title">名前</string>
+    <string name="pref_myname_summary">チャットメッセージに表示される名前</string>
     
 </resources>

@@ -25,10 +25,11 @@
     <string name="write_message">Write message:</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>
-    <string name="group_owner_text">"Am I the Group Owner?"</string>
+    <string name="group_owner_text">Am I the Group Owner?</string>
     <string name="client_text">This device will act as a client. Click on Gallery button to pick a local(stored) file</string>
-    
     <string name="empty_message">No devices found. Turn on P2P and perform discovery from the Action Bar</string>
+    <string name="connected">connected with %1$s</string>
+
     <string name="pref_settings_title">Settings</string>
     <string name="pref_expressions_settings_title">History</string>
     <string name="pref_expressions_max_dialogtitle">Max of history</string>
@@ -42,9 +43,9 @@
     <string name="pref_recognition_language_summary">In which language to perform speech recognition</string>
 
     <string name="pref_network_settings_title">Network</string>
-    <string name="pref_enable_wifi_title">Enable WiFi P2P</string>
-    <string name="pref_enable_wifi_summary">Enable WiFi P2P</string>
+    <string name="pref_network_mode_title">Network Mode</string>
+    <string name="pref_network_mode_summary">UDP/WiFi P2P</string>
     <string name="pref_myname_title">My name</string>
-    <string name="pref_myname_summary">My name</string>
+    <string name="pref_myname_summary">Name shown with chat message</string>
     
 </resources>

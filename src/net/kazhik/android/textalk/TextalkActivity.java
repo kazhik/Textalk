@@ -8,7 +8,6 @@ import java.util.Locale;
 import net.kazhik.android.textalk.chat.ChatAdapter;
 import net.kazhik.android.textalk.chat.ChatManager;
 import net.kazhik.android.textalk.chat.ChatMessage;
-import net.kazhik.android.textalk.chat.ChatConnection;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -319,7 +318,7 @@ public class TextalkActivity extends Activity implements ChatManager.ReceiveMess
 	}
 	@Override
 	public void onConnected(String ipaddr, String name) {
-		String msg = "Connected from " + ipaddr;
+		String msg = getResources().getString(R.string.connected, name);
 		this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, name, msg));
 	}
 	@Override

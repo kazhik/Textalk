@@ -26,11 +26,13 @@
      </PreferenceCategory>
      
      <PreferenceCategory android:title="@string/pref_network_settings_title" >
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="enable_wifi"
-            android:summary="@string/pref_enable_wifi_summary"
-            android:title="@string/pref_enable_wifi_title" />
+        <ListPreference
+            android:dialogTitle="@string/pref_network_mode_title"
+            android:entries="@array/network_mode"
+            android:entryValues="@array/network_mode_value"
+            android:key="network_mode"
+            android:summary="@string/pref_network_mode_summary"
+            android:title="@string/pref_network_mode_title" />
         <EditTextPreference
             android:key="myname"
             android:summary="@string/pref_myname_summary"
