@@ -58,6 +58,9 @@ public class HandwritingActivity extends Activity implements
 			new File(filename).delete();
 			Log.d(TAG, "HandwritingActivity: bmp = " + bmp.getByteCount());
 			m_handwritingView.setBitmap(bmp);
+
+			m_undoBtn.setEnabled(false);
+			m_sendBtn.setEnabled(false);
 		} else {
 			this.disableButtons();
 		}

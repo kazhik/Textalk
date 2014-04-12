@@ -64,6 +64,7 @@ public class HandwritingView extends View {
 	public void touchDown(PointF pt) {
 		if (this.receivedBitmap != null) {
 			this.receivedBitmap = null;
+			this.canvasBitmap.eraseColor(this.m_backgroundColor);
 		}
 		m_currentPath.moveTo( pt.x, pt.y );
 		m_lastPt = pt;
@@ -92,6 +93,7 @@ public class HandwritingView extends View {
 	public void clear(){
 		m_pathStack.clear();
 		m_currentPath.reset();
+		this.receivedBitmap = null;
 		this.canvasBitmap.eraseColor(this.m_backgroundColor);
 
 		invalidate();
