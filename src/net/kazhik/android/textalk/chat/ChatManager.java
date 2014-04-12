@@ -7,52 +7,71 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import net.kazhik.android.textalk.ExportBitmap;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 
 
 public class ChatManager implements ChatServer.ConnectionListener,
-		ChatConnection.MessageListener, PeerManager.PeerListener {
+		ChatConnection.MessageListener, PeerManager.PeerListener, Handler.Callback {
 	public interface ReceiveMessageListener {
 		void onConnected(String ipaddr, String name);
+		void onDisconnected(String ipaddr, String name);
 		void onMessage(String name, String msg);
+		void onBitmap(String name, String filename);
 	}
 	private ExecutorService m_serverConnect = Executors.newSingleThreadExecutor();
 	private ExecutorService m_clientConnect = Executors.newCachedThreadPool();
-	private ChatServer m_server = new ChatServer(this);
+	private ChatServer m_server;
 	private Map<String, ChatConnection> m_clients = new ConcurrentHashMap<String, ChatConnection>();
 	private ReceiveMessageListener m_listener;
 	private static final String TAG = "ChatManager";
 	
 	private Context context;
-	private PeerManager peerManager;
+	private PeerManager peerManager = null;
 
 	
-	public ChatManager(Context context, ReceiveMessageListener listener) {
+	public ChatManager(Context context) {
 		this.context = context;
-		this.m_listener = listener;
 	}
 	public void init(String myname) {
+		if (this.peerManager != null) {
+			return;
+		}
 		
 		this.peerManager = new PeerManager(this.context, this);
 		this.peerManager.init(myname);
 		
-		this.m_serverConnect.submit(new ChatServer(this));
+		this.m_server = new ChatServer(this);
+		this.m_serverConnect.submit(this.m_server);
 		
 	}
+	public void addReceiveMessageListener(ReceiveMessageListener listener) {
+		this.m_listener = listener;
+	}
 	
-	public void connect(String ipaddr, String name) {
+	public boolean connect(String ipaddr, String name) {
+		boolean result;
 		ChatConnection conn = this.m_clients.get(ipaddr);
 		if (conn != null && conn.isConnected()) {
 			Log.i(TAG, "Already connected: " + ipaddr);
-			conn.setName(name);
+			if (!conn.getName().equals(name)) {
+				conn.setName(name);
+				this.m_listener.onConnected(ipaddr, name);
+			}
+			result = false;
 		} else {
 			conn = new ChatConnection(new Socket(), ipaddr, name, this);
 			this.m_clientConnect.submit(conn);
 			Log.d(TAG, "ChatManager#connect: connected with " + ipaddr);
+			result = true;
 		}
 		this.m_clients.put(ipaddr, conn);
+		return result;
 
 	}
 	@Override
@@ -67,11 +86,15 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		this.m_clientConnect.submit(client);
 		this.m_clients.put(addr, client);
 		Log.d(TAG, "ChatManager#onClientConnected: " + addr);
-		
 	}
 	
 	public boolean close() throws IOException {
-		this.m_server.close();
+		if (this.peerManager != null) {
+			this.peerManager.close();
+		}
+		if (this.m_server != null) {
+			this.m_server.close();
+		}
 		for (ChatConnection client: this.m_clients.values()) {
 			client.close();
 		}
@@ -80,17 +103,24 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		
 		return true;
 	}
-	public boolean reconnect(ChatConnection.Mode mode) throws IOException {
+	public boolean reconnect() throws IOException {
 		for (ChatConnection client: this.m_clients.values()) {
 			client.close();
-			client.setMode(mode);
 			this.m_clientConnect.submit(client);
 		}
 		return true;
 	}
+	public void broadcastBitmap(Bitmap bmp) throws IOException {
+		for (ChatConnection client: m_clients.values()) {
+			client.sendBitmap(bmp);
+		}
+		
+	}
+
 	public void broadcastMessage(String text) throws IOException {
 		for (ChatConnection client: m_clients.values()) {
-			client.sendMessage(text);
+			client.sendText(text);
+			Log.d(TAG, "Message was sent to " + client.getName());
 		}
 		
 	}
@@ -99,7 +129,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		if (client == null) {
 			return;
 		}
-		client.sendMessage(text);
+		client.sendText(text);
 		
 	}
 	@Override
@@ -108,6 +138,25 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		String name = this.m_clients.get(addr).getName();
 		this.m_listener.onMessage(name, msg);
 		
+	}
+	@Override
+	public void onNewBitmap(String addr, Bitmap bmp) {
+		Log.d(TAG, "ChatManager#onNewBitmap: ");
+
+		String sender = this.m_clients.get(addr).getName();
+		
+		// To avoid "FAILED BINDER TRANSACTION"
+		ExportBitmap exportBmp = new ExportBitmap(this.context, this, bmp, sender);
+		exportBmp.execute();
+		
+	}
+	@Override
+	public boolean handleMessage(Message msg) {
+		String filename = msg.getData().getString("filename");
+		String sender = msg.getData().getString("sender");
+		this.m_listener.onBitmap(sender, filename);
+		
+		return false;
 	}
 
 	public void pause() {
@@ -119,11 +168,16 @@ public class ChatManager implements ChatServer.ConnectionListener,
 	@Override
 	public void onNewHost(String addr, String name) {
 		Log.d(TAG, "ChatManager#onNewHost: " + addr + "; name: " + name);
-		this.connect(addr, name);
-		this.m_listener.onConnected(addr, name);
+		boolean result = this.connect(addr, name);
+		if (result) {
+			this.m_listener.onConnected(addr, name);
+		}
 	}
 	@Override
 	public void onClosed(String addr) {
-		this.m_clients.remove(addr);
+		ChatConnection conn = this.m_clients.remove(addr);
+		if (conn != null) {
+			this.m_listener.onDisconnected(addr, conn.getName());
+		}
 	}
 }

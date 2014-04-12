@@ -1,14 +1,15 @@
 package net.kazhik.android.textalk.chat;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,25 +18,19 @@ import android.util.Log;
 public class ChatConnection implements Runnable {
 	public interface MessageListener {
 		void onNewMessage(String addr, String msg);
+		void onNewBitmap(String addr, Bitmap bmp);
 		void onClosed(String addr);
 	}
-	public interface BitmapListener {
-		void onNewBitmap(String addr, Bitmap bmp);
-	}
-	public enum Mode {
-		TEXT,
-		BINARY
-	};
+
 	private MessageListener msgListener;
-	private BitmapListener bmpListener;
 	private Socket socket;
 	private String addr;
 	private String name;
-	private Mode mode = Mode.TEXT;
 	private static final String TAG = "ChatConnection";
 
 	
-	public ChatConnection(Socket socket, String addr, String name, MessageListener listener) {
+	public ChatConnection(Socket socket, String addr, String name,
+			MessageListener listener) {
 		this.socket = socket;
 		this.addr = addr;
 		this.name = name;
@@ -65,92 +60,62 @@ public class ChatConnection implements Runnable {
 	public boolean isConnected() {
 		return this.socket.isConnected();
 	}
-	public void setMode(Mode mode) {
-		this.mode = mode;
-	}
-	private boolean receiveBinaryData(InputStream is) throws IOException {
-		Log.i(TAG, "Waiting data from: " + this.socket.getInetAddress().getHostAddress());
-		byte[] recvBuff = new byte[1024*1024];
-		int recvSize = is.read(recvBuff);
-		if (recvSize == -1) {
-			return false;
-		}
-		
-		Bitmap bmp = BitmapFactory.decodeByteArray(recvBuff, 0, recvSize);
-		this.bmpListener.onNewBitmap(this.addr, bmp);
-		return true;
-	}
-	private boolean receiveTextMessage(InputStream is) throws IOException {
-		Log.i(TAG, "Waiting message from: " + this.socket.getInetAddress().getHostAddress());
-		InputStreamReader isr = new InputStreamReader(is);
-		BufferedReader br = new BufferedReader(isr);
-		
-		String msg = br.readLine();
-		if (msg == null) {
-			return false;
-		}
-		Log.i(TAG, "Received: " + msg);
-		this.msgListener.onNewMessage(this.addr, msg);
-		return true;
-	}
-	
 	@Override
 	public void run() {
 		if (!this.socket.isConnected()) {
 			this.connect();
 		}
-		InputStream is;
 		try {
-			is = this.socket.getInputStream();
-			boolean bRet;
 			while (this.socket.isConnected()) {
-				if (this.mode == Mode.TEXT) {
-					bRet = this.receiveTextMessage(is);
-				} else {
-					bRet = this.receiveBinaryData(is);
-				}
-				if (!bRet) {
-					Log.i(TAG, "Connection closed");
-					this.socket.close();
-					this.msgListener.onClosed(this.addr);
-					break;
+				InputStream is = this.socket.getInputStream();
+				DataInputStream dis = new DataInputStream(is);
+				char dataType = dis.readChar();
+				int dataSize = dis.readInt();
+				byte[] recvBuff = new byte[dataSize];
+				dis.readFully(recvBuff);
+				if (dataType == 'B') {
+					Bitmap bmp = BitmapFactory.decodeByteArray(recvBuff, 0, dataSize);
+					this.msgListener.onNewBitmap(this.addr, bmp);
+				} else if (dataType == 'T') {
+					String msg = new String(recvBuff, 0, dataSize, "UTF-8");
+					Log.i(TAG, "Received text: " + msg);
+					this.msgListener.onNewMessage(this.addr, msg);
 				}
 			}
+			this.socket.close();
+			this.msgListener.onClosed(this.addr);
+			Log.i(TAG, "ChatConnection end: ");
+		} catch (EOFException e) {
+			Log.i(TAG, "Disconnected");
+			this.msgListener.onClosed(this.addr);
+		} catch (SocketException e) {
+			Log.i(TAG, "ChatConnection end: " + e.getMessage());
 		} catch (IOException e) {
 			Log.e(TAG, "IOException", e);
 		}
 		
 	}
-	public void sendBitmap(Bitmap bmp) throws IOException {
-		if (this.mode != Mode.BINARY) {
-			return;
-		}
+	private void sendData(char dataType, byte[] sendData) throws IOException {
 		if (this.socket.isClosed() || !this.socket.isConnected()) {
 			throw new IOException("Socket is dead");
 		}
 		OutputStream os = this.socket.getOutputStream();
-		bmp.compress(Bitmap.CompressFormat.PNG, 100, os);
+		DataOutputStream dos = new DataOutputStream(os);
+		dos.writeChar(dataType);
+		dos.writeInt(sendData.length);
+		os.write(sendData);
+		
 	}
-	public void sendMessage(String text) throws IOException {
-		if (this.mode != Mode.TEXT) {
-			return;
-		}
-		if (this.socket.isClosed() || !this.socket.isConnected()) {
-			throw new IOException("Socket is dead");
-		}
-		Log.d(TAG, "ChatConnection#sendMessage: " + text + " to: " + this.socket.getInetAddress().getHostAddress());
-		OutputStream os;
-		try {
-			os = this.socket.getOutputStream();
-			PrintWriter w = new PrintWriter(os, true);
-			w.println(text);
-			Log.i(TAG, "Sent: " + text);
-		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, "UnsupportedEncodingException", e);
-		} catch (IOException e) {
-			Log.e(TAG, "IOException", e);
-			throw e;
-		}
+	public void sendBitmap(Bitmap bmp) throws IOException {
+		Log.d(TAG, "sendBitmap: " + bmp.getByteCount());
+		ByteArrayOutputStream bos=new ByteArrayOutputStream();
+		bmp.compress(Bitmap.CompressFormat.PNG, 100, bos);
+		this.sendData('B', bos.toByteArray());
+	}
+	public void sendText(String text) throws IOException {
+		Log.d(TAG, "ChatConnection#sendMessage: " + text
+				+ " to: " + this.socket.getInetAddress().getHostAddress());
+		this.sendData('T', text.getBytes("UTF-8"));
 		
 	}
 	public void close() throws IOException {

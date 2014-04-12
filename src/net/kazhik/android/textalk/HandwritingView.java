@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 public class HandwritingView extends View {
@@ -20,30 +21,50 @@ public class HandwritingView extends View {
 	private Path m_currentPath = new Path();
 	private Paint m_currentPaint;
 	private int m_backgroundColor;
-	private Bitmap m_bitmap;
+	private Bitmap canvasBitmap;
+	private Bitmap receivedBitmap;
 	private Canvas  m_canvas;
+	private static final String TAG = "HandwritingView";
+	
 	
 	public HandwritingView(Context context, AttributeSet attrs) {
 		super(context, attrs);
 
 		m_backgroundColor = Color.WHITE;
 		m_currentPaint = new Paint();
-		m_currentPaint.setDither(false);
 		m_currentPaint.setStyle(Paint.Style.STROKE);
 		m_currentPaint.setStrokeJoin(Paint.Join.ROUND);
 		m_currentPaint.setStrokeCap(Paint.Cap.ROUND);
 		m_currentPaint.setStrokeWidth(5);
 		m_currentPaint.setColor(Color.DKGRAY);
+		m_currentPaint.setDither(true);
+		m_currentPaint.setFilterBitmap(true);
+		m_currentPaint.setAntiAlias(true);
 
 	}
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
-		m_bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-		m_canvas = new Canvas(m_bitmap);
+		this.canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+		m_canvas = new Canvas(this.canvasBitmap);
+
+		if (this.receivedBitmap != null) {
+			this.receivedBitmap = Bitmap.createScaledBitmap(
+					this.receivedBitmap,
+					m_canvas.getWidth(),
+					m_canvas.getHeight(),
+					true);
+			
+		}
+		Log.d(TAG, "onSizeChanged");
+		
+    
     }
 	
 	public void touchDown(PointF pt) {
+		if (this.receivedBitmap != null) {
+			this.receivedBitmap = null;
+		}
 		m_currentPath.moveTo( pt.x, pt.y );
 		m_lastPt = pt;
 		invalidate();
@@ -71,6 +92,8 @@ public class HandwritingView extends View {
 	public void clear(){
 		m_pathStack.clear();
 		m_currentPath.reset();
+		this.canvasBitmap.eraseColor(this.m_backgroundColor);
+
 		invalidate();
 	}
 
@@ -79,22 +102,37 @@ public class HandwritingView extends View {
 	}
 
 	public Bitmap getBitmap() {
-		return m_bitmap;
+		return this.canvasBitmap;
 	}
 	public void setBitmap(Bitmap bmp) {
-		this.m_bitmap = bmp;
+		if (this.m_canvas != null) {
+			this.receivedBitmap = Bitmap.createScaledBitmap(
+					bmp,
+					m_canvas.getWidth(),
+					m_canvas.getHeight(),
+					true);
+			
+		} else {
+			this.receivedBitmap = bmp;
+		}
+		m_pathStack.clear();
+		m_currentPath.reset();
 	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		canvas.drawColor(m_backgroundColor);
-		if (!m_pathStack.isEmpty()) {
-			for (Path path : m_pathStack) {
-				canvas.drawPath(path, m_currentPaint);
+		if (this.receivedBitmap != null) {
+			canvas.drawBitmap(this.receivedBitmap, 0, 0, null);
+		} else {
+			canvas.drawColor(m_backgroundColor);
+			if (!m_pathStack.isEmpty()) {
+				for (Path path : m_pathStack) {
+					canvas.drawPath(path, m_currentPaint);
+				}
 			}
-		}
-		if (!m_currentPath.isEmpty()) {
-			canvas.drawPath(m_currentPath, m_currentPaint);
+			if (!m_currentPath.isEmpty()) {
+				canvas.drawPath(m_currentPath, m_currentPaint);
+			}
 		}
 
 	}

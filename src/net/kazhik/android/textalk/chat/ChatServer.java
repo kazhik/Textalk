@@ -33,15 +33,18 @@ class ChatServer implements Runnable {
 
 				m_listener.onClientConnected(clientSocket);
 			}
-			
+			Log.d(TAG, "ChatServer end");
 		} catch (SocketException e) {
-			Log.e(TAG, "SocketException", e);
+			Log.d(TAG, "ChatServer end: " + e.getMessage());
 		} catch (IOException e) {
 			Log.e(TAG, "IOException", e);
 		}
 	}
 	public void close() throws IOException {
-		m_serverSocket.close();
+		if (this.m_serverSocket != null) {
+			Log.d(TAG, "Closing ChatServer socket");
+			m_serverSocket.close();
+		}
 	}
 	
 }

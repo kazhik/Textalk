@@ -22,14 +22,6 @@
 <item>en</item>
 <item>ja</item>
 </string-array>
-<string-array name="history_insert_position">
-<item>insert at top</item>
-<item>insert at bottom</item>
-</string-array>
-<string-array name="history_insert_position_value">
-<item>top</item>
-<item>bottom</item>
-</string-array>
 <string-array name="network_mode">
 <item>UDP</item>
 <item>WiFi P2P</item>

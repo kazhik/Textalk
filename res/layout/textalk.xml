@@ -3,6 +3,7 @@
     android:id="@+id/main"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@android:color/background_light"
     android:orientation="vertical" >
 
     <LinearLayout
@@ -20,6 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClickSpeakButton"
+            android:background="@color/button_background_color"
             android:text="@string/button_speak" />
 
         <Button
@@ -29,6 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClickWriteButton"
+            android:background="@color/button_background_color"
             android:text="@string/button_write" />
 
         <Button
@@ -38,6 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClickHandwriteButton"
+            android:background="@color/button_background_color"
             android:text="@string/button_handwrite" />
     </LinearLayout>
 

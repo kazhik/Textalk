@@ -50,7 +50,11 @@ public class PeerManager implements ConnectionListener {
 
 		
 	}
-	
+	public void close() {
+		if (this.networkMode.equals("udp")) {
+			this.udpManager.stop();
+		}
+	}
 	@Override
 	public void onNewHost(String addr, String name) {
 		this.peers.put(addr, name);

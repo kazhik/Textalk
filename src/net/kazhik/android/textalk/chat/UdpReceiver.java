@@ -30,6 +30,7 @@ public class UdpReceiver implements Runnable {
 		}
 	}
 	public void close() {
+		Log.d(TAG, "Closing UdpReceiver socket");
 		m_socket.close();
 	}
 	@Override
@@ -44,6 +45,8 @@ public class UdpReceiver implements Runnable {
 				m_listener.onReceived(packet.getAddress(), recvMsg);
 			}
 			Log.i(TAG, "Receiver end");
+		} catch (SocketException e) {
+			Log.i(TAG, "Receiver end: " + e.getMessage());
 		} catch (IOException e) {
 			Log.e(TAG, "run", e);
 		}

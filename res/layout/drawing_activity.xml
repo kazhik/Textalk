@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
+            android:background="@color/button_background_color"
             android:text="@string/button_undo" />
 
         <Button
@@ -32,16 +33,18 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
+            android:background="@color/button_background_color"
             android:text="@string/button_clear" />
 
         <Button
-            android:id="@+id/saveBtn"
+            android:id="@+id/sendBtn"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:onClick="onClick"
-            android:text="@string/button_save" />
+            android:background="@color/button_background_color"
+            android:text="@string/button_send" />
 
         </LinearLayout>
 </RelativeLayout>

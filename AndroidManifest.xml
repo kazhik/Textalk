@@ -34,6 +34,8 @@
         </activity>
         <activity android:name="Config" >
         </activity>
+        <service android:name="net.kazhik.android.textalk.chat.ChatService" />
+        
     </application>
 
 </manifest>

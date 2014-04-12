@@ -8,14 +8,21 @@ import java.util.Locale;
 import net.kazhik.android.textalk.chat.ChatAdapter;
 import net.kazhik.android.textalk.chat.ChatManager;
 import net.kazhik.android.textalk.chat.ChatMessage;
+import net.kazhik.android.textalk.chat.ChatService;
+import net.kazhik.android.textalk.chat.ChatService.ChatBinder;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -26,7 +33,8 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class TextalkActivity extends Activity implements ChatManager.ReceiveMessageListener {
+public class TextalkActivity extends Activity implements
+		ChatManager.ReceiveMessageListener, ServiceConnection {
 	private static final String KEY_SPEAK_HISTORY = "speak_history";
 	private static final int REQ_SPEAK = 1001;
 	private ChatAdapter chatHistory;
@@ -67,9 +75,6 @@ public class TextalkActivity extends Activity implements ChatManager.ReceiveMess
 		
 		this.myname =
 				PreferenceManager.getDefaultSharedPreferences(this).getString("myname", "Textalk");
-
-		this.chatManager = new ChatManager(this, this);
-		this.chatManager.init(this.myname);
 
 	}
 	@Override
@@ -278,12 +283,16 @@ public class TextalkActivity extends Activity implements ChatManager.ReceiveMess
 	@Override
 	protected void onPause() {
 		super.onPause();
-		this.chatManager.pause();
+		if (this.chatManager != null) {
+			this.chatManager.pause();
+		}
 	}
 	@Override
 	protected void onResume() {
 		super.onResume();
-		this.chatManager.resume();
+		if (this.chatManager != null) {
+			this.chatManager.resume();
+		}
 
 	}
 	private void showChatMessage(ChatMessage msg) {
@@ -299,6 +308,9 @@ public class TextalkActivity extends Activity implements ChatManager.ReceiveMess
 			@Override
 			public void run() {
 				this.chatAdapter.addMessage(msg);
+				ListView historyView = (ListView) findViewById(R.id.textList);
+				historyView.setSelection(this.chatAdapter.getCount() - 1);
+
 			}
 			
 		}
@@ -313,7 +325,7 @@ public class TextalkActivity extends Activity implements ChatManager.ReceiveMess
 		}
 		this.showChatMessage(new ChatMessage(ChatMessage.SENT, this.myname, text));
 
-		m_expressionTable.updateTimesUsed(text);
+		this.m_expressionTable.updateTimesUsed(text);
 		
 	}
 	@Override
@@ -322,9 +334,68 @@ public class TextalkActivity extends Activity implements ChatManager.ReceiveMess
 		this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, name, msg));
 	}
 	@Override
+	public void onDisconnected(String ipaddr, String name) {
+		String msg = getResources().getString(R.string.disconnected, name);
+		this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, name, msg));
+		
+	}
+
+	@Override
 	public void onMessage(String name, String msg) {
 		this.showChatMessage(new ChatMessage(ChatMessage.RECEIVED, name, msg));
 		
 	}
-	
+
+	public Bitmap scaleDownBitmap(Bitmap photo, int newHeight, Context context) {
+
+		final float densityMultiplier = context.getResources()
+				.getDisplayMetrics().density;
+
+		int h = (int) (newHeight * densityMultiplier);
+		int w = (int) (h * photo.getWidth() / ((double) photo.getHeight()));
+
+		photo = Bitmap.createScaledBitmap(photo, w, h, true);
+
+		return photo;
+	}
+
+	@Override
+	public void onBitmap(String name, String filename) {
+		/*
+		Log.d(TAG, "onBitmap: " + bmp.getByteCount());
+		Bitmap miniBmp = this.scaleDownBitmap(bmp, 300, this);
+		Log.d(TAG, "onBitmap: " + miniBmp.getByteCount());
+		*/
+		Intent intent = new Intent(TextalkActivity.this, HandwritingActivity.class);
+		intent.putExtra("bitmap", filename);
+		this.startActivity(intent);
+		
+	}
+	@Override
+	protected void onStart() {
+		super.onStart();
+		Log.d(TAG, "bind service");
+		Intent intent = new Intent(this, ChatService.class);
+
+		this.bindService(intent, this, Context.BIND_AUTO_CREATE);
+	}
+	@Override
+	protected void onStop() {
+		super.onStop();
+		Log.d(TAG, "unbind service");
+		this.unbindService(this);
+	}
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		Log.d(TAG, "onServiceConnected: " + name.toString());
+		ChatBinder binder = (ChatBinder)service;
+		this.chatManager = binder.getChatManager();
+		this.chatManager.init(this.myname);
+		this.chatManager.addReceiveMessageListener(this);
+	}
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+		Log.d(TAG, "onServiceDisConnected: " + name.toString());
+		
+	}
 }

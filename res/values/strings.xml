@@ -8,7 +8,7 @@
     <string name="button_retry">Retry</string>
     <string name="button_clear">Clear</string>
     <string name="button_undo">Undo</string>
-    <string name="button_save">Save</string>
+    <string name="button_send">Send</string>
     <string name="button_close">Close</string>
     <string name="button_connect">Connect</string>
     <string name="button_disconnect">Disconnect</string>
@@ -21,7 +21,7 @@
     <string name="no_expressions">No saved history.</string>
     <string name="no_results">No results.</string>
     <string name="confirm_clear">Clear all history?</string>
-    <string name="file_saved">File saved.</string>
+    <string name="bitmap_sent">Bitmap was sent.</string>
     <string name="write_message">Write message:</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>
@@ -29,7 +29,8 @@
     <string name="client_text">This device will act as a client. Click on Gallery button to pick a local(stored) file</string>
     <string name="empty_message">No devices found. Turn on P2P and perform discovery from the Action Bar</string>
     <string name="connected">connected with %1$s</string>
-
+    <string name="disconnected">disconnected with %1$s</string>
+    
     <string name="pref_settings_title">Settings</string>
     <string name="pref_expressions_settings_title">History</string>
     <string name="pref_expressions_max_dialogtitle">Max of history</string>

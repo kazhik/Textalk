@@ -10,20 +10,25 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class ExportBitmap extends AsyncTask<Intent, Void, Boolean> {
 	private Context m_context;
 	private Handler.Callback m_handler;
 	private Bitmap m_bitmap;
+	private String filename;
+	private String sender;
 
 	public ExportBitmap(Context context, Handler.Callback handler,
-			Bitmap bitmap) {
+			Bitmap bitmap, String sender) {
 		m_context = context;
-		m_bitmap = bitmap;
 		m_handler = handler;
+		m_bitmap = bitmap;
+		this.sender = sender;
 	}
 
 	@Override
@@ -43,9 +48,9 @@ public class ExportBitmap extends AsyncTask<Intent, Void, Boolean> {
 					Locale.getDefault());
 			String timeStamp = sdf.format(new Date());
 			
-			FileOutputStream out = new FileOutputStream(new File(filePath
-					+ File.separator + "HW_" + timeStamp + ".png"));
-			m_bitmap.compress(Bitmap.CompressFormat.PNG, 90, out);
+			this.filename = filePath + File.separator + "HW_" + timeStamp + ".png";
+			FileOutputStream out = new FileOutputStream(new File(this.filename));
+			m_bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
 			out.flush();
 			out.close();
 			return true;
@@ -59,7 +64,12 @@ public class ExportBitmap extends AsyncTask<Intent, Void, Boolean> {
 	protected void onPostExecute(Boolean bool) {
 		super.onPostExecute(bool);
 		if (bool) {
-			m_handler.handleMessage(null);
+			Message msg = new Message();
+			Bundle bundle = new Bundle();
+			bundle.putString("filename", this.filename);
+			bundle.putString("sender", this.sender);
+			msg.setData(bundle);
+			m_handler.handleMessage(msg);
 		}
 	}
 }

@@ -1,13 +1,24 @@
 package net.kazhik.android.textalk;
 
+import java.io.File;
+import java.io.IOException;
+
+import net.kazhik.android.textalk.chat.ChatManager;
+import net.kazhik.android.textalk.chat.ChatService;
+import net.kazhik.android.textalk.chat.ChatService.ChatBinder;
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.IBinder;
+import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,18 +28,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-/**
- * Created by IntelliJ IDEA. User: almondmendoza Date: 07/11/2010 Time: 2:14 AM
- * Link: http://www.tutorialforandroid.com/ Modified by kazhik, 2011.
- */
+
 public class HandwritingActivity extends Activity implements
-		View.OnTouchListener, Handler.Callback {
+		View.OnTouchListener, ServiceConnection, ChatManager.ReceiveMessageListener {
 
 	private HandwritingView m_handwritingView;
+	private static final String TAG = "HandwritingActivity";
 
 	private Button m_undoBtn;
 	private Button m_clearBtn;
-	private Button m_saveBtn;
+	private Button m_sendBtn;
+	private ChatManager chatManager;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -40,10 +50,17 @@ public class HandwritingActivity extends Activity implements
 
 		m_undoBtn = (Button) findViewById(R.id.undoBtn);
 		m_clearBtn = (Button) findViewById(R.id.clearBtn);
-		m_saveBtn = (Button) findViewById(R.id.saveBtn);
-		
-		this.disableButtons();
+		m_sendBtn = (Button) findViewById(R.id.sendBtn);
 
+		String filename = getIntent().getStringExtra("bitmap");
+		if (filename != null) {
+			Bitmap bmp = BitmapFactory.decodeFile(filename);
+			new File(filename).delete();
+			Log.d(TAG, "HandwritingActivity: bmp = " + bmp.getByteCount());
+			m_handwritingView.setBitmap(bmp);
+		} else {
+			this.disableButtons();
+		}
 	}
 
 	private void enableButtons() {
@@ -57,7 +74,7 @@ public class HandwritingActivity extends Activity implements
 	private void setButtonEnabled(boolean enabled) {
 		m_undoBtn.setEnabled(enabled);
 		m_clearBtn.setEnabled(enabled);
-		m_saveBtn.setEnabled(enabled);
+		m_sendBtn.setEnabled(enabled);
 	}
 
 	// http://stackoverflow.com/questions/3611457/android-temporarily-disable-orientation-changes-in-an-activity
@@ -136,21 +153,24 @@ public class HandwritingActivity extends Activity implements
 //			finish();
 //			break;
 		
-		case R.id.saveBtn:
-			new ExportBitmap(this, this,
-					m_handwritingView.getBitmap()).execute();
+		case R.id.sendBtn:
+			this.broadcastBitmap();
 			break;
 		
 		}
 	}
-
-	@Override
-	public boolean handleMessage(Message msg) {
-		Toast.makeText(this, R.string.file_saved,
-				Toast.LENGTH_LONG).show();
-		return false;
+	private void broadcastBitmap() {
+		Bitmap bmp = this.m_handwritingView.getBitmap();
+		try {
+			this.chatManager.broadcastBitmap(bmp);
+			Toast.makeText(this, R.string.bitmap_sent,
+					Toast.LENGTH_LONG).show();
+		} catch (IOException e) {
+			Log.e(TAG, "Failed to broadcast bitmap", e);
+		}
+		
 	}
-	  
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, Constants.MENU_SETTING, Menu.NONE,
@@ -176,4 +196,75 @@ public class HandwritingActivity extends Activity implements
 		}
 		return ret;
 	}
+	@Override
+	protected void onStart() {
+		super.onStart();
+		
+		Log.d(TAG, "bind service");
+		Intent intent = new Intent(this, ChatService.class);
+
+		this.bindService(intent, this, Context.BIND_AUTO_CREATE);
+	}
+	@Override
+	protected void onStop() {
+		super.onStop();
+		Log.d(TAG, "unbind service");
+		this.unbindService(this);
+	}
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		Log.d(TAG, "onServiceConnected: " + name.toString());
+		ChatBinder binder = (ChatBinder)service;
+		this.chatManager = binder.getChatManager();
+		this.chatManager.addReceiveMessageListener(this);
+	}
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+		Log.d(TAG, "onServiceDisConnected: " + name.toString());
+		
+	}
+
+	@Override
+	public void onConnected(String ipaddr, String name) {
+		// TODO toast?
+		
+	}
+
+	@Override
+	public void onDisconnected(String ipaddr, String name) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessage(String name, String msg) {
+		// TODO Switch to TextalkActivity
+		
+	}
+
+	@Override
+	public void onBitmap(String name, String filename) {
+		class ShowBitmap implements Runnable {
+			private Bitmap bmp;
+			
+			public ShowBitmap(Bitmap bmp) {
+				this.bmp = bmp;
+			}
+
+
+			@Override
+			public void run() {
+				m_handwritingView.setBitmap(this.bmp);
+				m_handwritingView.invalidate();
+				
+			}
+			
+		};
+		Bitmap bmp = BitmapFactory.decodeFile(filename);
+		new File(filename).delete();
+
+		this.runOnUiThread(new ShowBitmap(bmp));
+		
+	}
+
 }

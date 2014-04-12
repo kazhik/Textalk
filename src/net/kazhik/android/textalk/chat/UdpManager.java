@@ -24,10 +24,10 @@ public class UdpManager implements UdpReceiver.MessageListener {
 			Executors.newSingleThreadExecutor();
 
 	public static final int PORT = 5057;
-	private InetAddress m_localAddr;
+	private InetAddress localAddr;
 	private Map<String, Long> m_remoteAddrs =
 			new ConcurrentHashMap<String, Long>();
-	private UdpReceiver m_receiveTask;
+	private UdpReceiver receiveTask = null;
 	private static final int BUFFSIZE = 128;
 	private static final String TAG = "UdpManager";
 	private ConnectionListener m_listener;
@@ -38,19 +38,22 @@ public class UdpManager implements UdpReceiver.MessageListener {
 		WifiManager wifiManager =
 				(WifiManager)context.getSystemService(Context.WIFI_SERVICE);
 		
-		m_localAddr = this.convertIpAddr(wifiManager.getConnectionInfo().getIpAddress());
-		if (m_localAddr == null) {
+		this.localAddr = this.convertIpAddr(wifiManager.getConnectionInfo().getIpAddress());
+		if (this.localAddr == null) {
 			Log.e(TAG, "Failed to get My Address");
 			return;
 		}
-		Log.i(TAG, "My Address is: " + m_localAddr.getHostAddress());
+		Log.i(TAG, "My Address is: " + this.localAddr.getHostAddress());
 		this.startReceive();
 		this.startRefresh();
 		this.startBroadcasting(sendData);
 	}
 	public void stop() {
 		m_sender.shutdown();
-		m_receiveTask.close();
+		if (this.receiveTask != null) {
+			this.receiveTask.close();
+		}
+		m_remoteAddrs.clear();
 		m_receiver.shutdown();
 	}
 	// http://stackoverflow.com/questions/16730711/get-my-wifi-ip-address-android
@@ -90,16 +93,18 @@ public class UdpManager implements UdpReceiver.MessageListener {
 			}
 			
 		};
-		this.m_sender.scheduleAtFixedRate(r, 10, 10, TimeUnit.SECONDS);
+		this.m_sender.scheduleAtFixedRate(r, 10, 2, TimeUnit.SECONDS);
 	}
 
 
 	private void startReceive() {
+		if (this.receiveTask == null) {
+			this.receiveTask = new UdpReceiver(this);
+			this.receiveTask.init(PORT, BUFFSIZE);
+			
+			m_receiver.submit(this.receiveTask);
+		}
 
-		m_receiveTask = new UdpReceiver(this);
-		m_receiveTask.init(PORT, BUFFSIZE);
-		
-		m_receiver.submit(m_receiveTask);
 		
 	}
 	private void startBroadcasting(String sendData) {
@@ -109,7 +114,7 @@ public class UdpManager implements UdpReceiver.MessageListener {
 			return;
 		}
 		UdpBroadcast broadcast = new UdpBroadcast();
-		boolean ret = broadcast.init(m_localAddr, PORT, sendData);
+		boolean ret = broadcast.init(this.localAddr, PORT, sendData);
 		if (!ret) {
 			return;
 		}
@@ -121,7 +126,7 @@ public class UdpManager implements UdpReceiver.MessageListener {
 	
 	@Override
 	public void onReceived(InetAddress sender, String msg) {
-		if (sender.equals(m_localAddr)) {
+		if (sender.equals(this.localAddr)) {
 			return;
 		}
 
