@@ -20,7 +20,6 @@ import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -280,21 +279,6 @@ public class TextalkActivity extends Activity implements
 		}
 		return ret;
 	}
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (this.chatManager != null) {
-			this.chatManager.pause();
-		}
-	}
-	@Override
-	protected void onResume() {
-		super.onResume();
-		if (this.chatManager != null) {
-			this.chatManager.resume();
-		}
-
-	}
 	private void showChatMessage(ChatMessage msg) {
 		class ShowChatMessage implements Runnable {
 			private ChatAdapter chatAdapter;
@@ -346,30 +330,27 @@ public class TextalkActivity extends Activity implements
 		
 	}
 
-	public Bitmap scaleDownBitmap(Bitmap photo, int newHeight, Context context) {
-
-		final float densityMultiplier = context.getResources()
-				.getDisplayMetrics().density;
-
-		int h = (int) (newHeight * densityMultiplier);
-		int w = (int) (h * photo.getWidth() / ((double) photo.getHeight()));
-
-		photo = Bitmap.createScaledBitmap(photo, w, h, true);
-
-		return photo;
-	}
-
 	@Override
 	public void onBitmap(String name, String filename) {
-		/*
-		Log.d(TAG, "onBitmap: " + bmp.getByteCount());
-		Bitmap miniBmp = this.scaleDownBitmap(bmp, 300, this);
-		Log.d(TAG, "onBitmap: " + miniBmp.getByteCount());
-		*/
 		Intent intent = new Intent(TextalkActivity.this, HandwritingActivity.class);
 		intent.putExtra("bitmap", filename);
 		this.startActivity(intent);
 		
+	}
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (this.chatManager != null) {
+			this.chatManager.pause();
+		}
+	}
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (this.chatManager != null) {
+			this.chatManager.resume();
+		}
+
 	}
 	@Override
 	protected void onStart() {
@@ -392,6 +373,8 @@ public class TextalkActivity extends Activity implements
 		this.chatManager = binder.getChatManager();
 		this.chatManager.init(this.myname);
 		this.chatManager.addReceiveMessageListener(this);
+		
+		this.chatManager.resume();
 	}
 	@Override
 	public void onServiceDisconnected(ComponentName name) {

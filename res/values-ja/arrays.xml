@@ -25,9 +25,11 @@
 <string-array name="network_mode">
 <item>UDP</item>
 <item>WiFi P2P</item>
+<item>WiFiテザリング</item>
 </string-array>
 <string-array name="network_mode_value">
 <item>udp</item>
 <item>wifi_p2p</item>
+<item>wifi_tethering</item>
 </string-array>
 </resources>

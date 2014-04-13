@@ -19,7 +19,7 @@ class ChatServer implements Runnable {
 	private static final String TAG = "ChatServer";
 
 
-	ChatServer(ConnectionListener listener) {
+	public ChatServer(ConnectionListener listener) {
 		m_listener = listener;
 	}
 	

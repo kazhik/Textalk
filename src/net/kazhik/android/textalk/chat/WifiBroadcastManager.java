@@ -24,6 +24,7 @@ public class WifiBroadcastManager extends BroadcastReceiver implements
 	private Context context;
 	private IntentFilter intentFilter;
 	private static final String TAG = "WifiBroadcastManager";
+	private boolean receiverRegistered = false;
 
 	public WifiBroadcastManager(Context context,
 			ConnectionListener listener) {
@@ -96,9 +97,6 @@ public class WifiBroadcastManager extends BroadcastReceiver implements
 					intent.getParcelableExtra(WifiP2pManager.EXTRA_WIFI_P2P_DEVICE);
 			Log.d(TAG, "This Device: " +
 					p2pDevice.deviceName + "; status = " + p2pDevice.status);
-			if (p2pDevice.status == WifiP2pDevice.CONNECTED) {
-				this.wifiP2pManager.requestConnectionInfo(this.wifiChannel, this);
-			}
 		}
 	}
 
@@ -133,17 +131,25 @@ public class WifiBroadcastManager extends BroadcastReceiver implements
 		if (info.groupFormed) {
 			String ipaddr = info.groupOwnerAddress.getHostAddress();
 			if (info.isGroupOwner) {
-				Log.d(TAG, "My address: " + ipaddr);
+				// start server
+				Log.d(TAG, "Owner address: " + ipaddr);
 			} else {
+				// connect to client
 				Log.d(TAG, "Other address: " + ipaddr);
 				this.listener.onNewHost(ipaddr, ipaddr);
 			}
 		}
 	}
 	public void resume() {
-		this.context.registerReceiver(this, this.intentFilter);
+		if (this.receiverRegistered == false) {
+			this.context.registerReceiver(this, this.intentFilter);
+			this.receiverRegistered = true;
+		}
 	}
 	public void pause() {
-		this.context.unregisterReceiver(this);
+		if (this.receiverRegistered == true) {
+			this.context.unregisterReceiver(this);
+			this.receiverRegistered = false;
+		}
 	}
 }

@@ -39,15 +39,6 @@ public class ChatService extends Service {
 		}
 	}
 
-	public void resume() {
-		this.chatManager.resume();
-	}
-
-	public void pause() {
-		this.chatManager.pause();
-	}
-
-
 	@Override
 	public IBinder onBind(Intent intent) {
 		Log.d(TAG, "onBind");

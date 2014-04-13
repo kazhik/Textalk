@@ -1,5 +1,10 @@
 package net.kazhik.android.textalk.chat;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -43,13 +48,21 @@ public class PeerManager implements ConnectionListener {
 			this.udpManager.start(this.context, this.myname, this);
 		} else if (this.networkMode.equals("wifi_p2p")) {
 		    this.wifiBroadcastManager = new WifiBroadcastManager(this.context, this);
-
+		} else if (this.networkMode.equals("wifi_tethering")) {
 		} else {
 			Log.e(TAG, "Unknown network mode: " + this.networkMode);
 		}
 
 		
 	}
+	private void connectTetheringClients() {
+		Map<String, String> addrMap = this.getAddressMap();
+		for (String addr: addrMap.values()) {
+			this.peers.put(addr, addr);
+			this.listener.onNewHost(addr, addr);
+		}
+	}
+	
 	public void close() {
 		if (this.networkMode.equals("udp")) {
 			this.udpManager.stop();
@@ -69,6 +82,8 @@ public class PeerManager implements ConnectionListener {
 	public void resume() {
 		if (this.networkMode.equals("wifi_p2p")) {
 			this.wifiBroadcastManager.resume();
+		} else if (this.networkMode.equals("wifi_tethering")) {
+			this.connectTetheringClients();
 		} else if (this.networkMode.equals("udp")) {
 		}
 	}
@@ -78,4 +93,38 @@ public class PeerManager implements ConnectionListener {
 		} else if (this.networkMode.equals("udp")) {
 		}
 	}
+	// http://stackoverflow.com/questions/9906021/getting-the-ip-address-of-client-or-getting-the-informationssid-of-clients-con
+	private Map<String, String> getAddressMap() {
+		Map<String, String> addrMap = new HashMap<String, String>();
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader("/proc/net/arp"));
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] splitted = line.split(" +");
+
+				if (splitted != null && splitted.length >= 4) {
+					String macAddr = splitted[3];
+
+					if (macAddr.matches("..:..:..:..:..:..")) {
+						String ipAddr = splitted[0];
+						addrMap.put(macAddr, ipAddr);
+					}
+				}
+
+			}
+		} catch (FileNotFoundException e) {
+			Log.e(TAG, "Failed to open /proc/net/arp", e);
+		} catch (IOException e) {
+			Log.e(TAG, "Failed to read /proc/net/arp", e);
+		} finally {
+			try {
+				br.close();
+			} catch (IOException e) {
+			}
+		}
+		return addrMap;
+	
+	}
+
 }

@@ -168,9 +168,14 @@ public class ChatManager implements ChatServer.ConnectionListener,
 	@Override
 	public void onNewHost(String addr, String name) {
 		Log.d(TAG, "ChatManager#onNewHost: " + addr + "; name: " + name);
-		boolean result = this.connect(addr, name);
-		if (result) {
-			this.m_listener.onConnected(addr, name);
+		boolean result;
+		try {
+			result = this.connect(addr, name);
+			if (result) {
+				this.m_listener.onConnected(addr, name);
+			}
+		} catch (Exception e) {
+			Log.e(TAG, "Failed to connect to: " + addr, e);
 		}
 	}
 	@Override
@@ -180,4 +185,5 @@ public class ChatManager implements ChatServer.ConnectionListener,
 			this.m_listener.onDisconnected(addr, conn.getName());
 		}
 	}
+	
 }
