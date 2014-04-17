@@ -338,9 +338,11 @@ public class TextalkActivity extends Activity implements
 	}
 
 	@Override
-	public void onBitmap(String name, String filename) {
+	public void onBitmap(String sender, String filename) {
 		Intent intent = new Intent(TextalkActivity.this, HandwritingActivity.class);
 		intent.putExtra("bitmap", filename);
+		intent.putExtra("sender", sender);
+		intent.putExtra("myname", this.myname);
 		this.startActivity(intent);
 		
 	}

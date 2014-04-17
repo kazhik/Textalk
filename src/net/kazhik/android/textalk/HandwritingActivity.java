@@ -53,7 +53,9 @@ public class HandwritingActivity extends Activity implements
 		m_clearBtn = (Button) findViewById(R.id.clearBtn);
 		m_sendBtn = (Button) findViewById(R.id.sendBtn);
 
-		String filename = getIntent().getStringExtra("bitmap");
+		Intent intent = this.getIntent();
+		String filename = intent.getStringExtra("bitmap");
+//		String sender = intent.getStringExtra("sender");
 		if (filename != null) {
 			Bitmap bmp = BitmapFactory.decodeFile(filename);
 			new File(filename).delete();
@@ -65,7 +67,7 @@ public class HandwritingActivity extends Activity implements
 		} else {
 			this.disableButtons();
 		}
-		this.myname = getIntent().getStringExtra("myname");
+		this.myname = intent.getStringExtra("myname");
 	}
 
 	private void enableButtons() {
