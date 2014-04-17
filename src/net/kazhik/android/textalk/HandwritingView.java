@@ -114,12 +114,25 @@ public class HandwritingView extends View {
 	}
 	public void setBitmap(Bitmap bmp) {
 		if (this.m_canvas != null) {
+/*
+			Matrix matrix = new Matrix();
+			// Received: Landscape, Canvas: Portrait
+			if (bmp.getHeight() < bmp.getWidth() &&
+					m_canvas.getHeight() > m_canvas.getWidth()) {
+				matrix.postRotate(90);
+			} else if (bmp.getHeight() > bmp.getWidth() &&
+					m_canvas.getHeight() < m_canvas.getWidth()) {
+				matrix.postRotate(90);
+			}
+			
+			this.receivedBitmap = Bitmap.createBitmap(bmp, 0, 0, m_canvas.getWidth(),
+					m_canvas.getHeight(), matrix, true);
+*/
 			this.receivedBitmap = Bitmap.createScaledBitmap(
 					bmp,
 					m_canvas.getWidth(),
 					m_canvas.getHeight(),
 					true);
-			
 		} else {
 			this.receivedBitmap = bmp;
 		}

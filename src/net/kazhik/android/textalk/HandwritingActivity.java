@@ -53,21 +53,23 @@ public class HandwritingActivity extends Activity implements
 		m_clearBtn = (Button) findViewById(R.id.clearBtn);
 		m_sendBtn = (Button) findViewById(R.id.sendBtn);
 
+		Bitmap bmp = null;
 		Intent intent = this.getIntent();
-		String filename = intent.getStringExtra("bitmap");
 //		String sender = intent.getStringExtra("sender");
+		String filename = intent.getStringExtra("bitmap");
 		if (filename != null) {
-			Bitmap bmp = BitmapFactory.decodeFile(filename);
+			bmp = BitmapFactory.decodeFile(filename);
 			new File(filename).delete();
-			Log.d(TAG, "HandwritingActivity: bmp = " + bmp.getByteCount());
-			m_handwritingView.setBitmap(bmp);
+		}
+		this.myname = intent.getStringExtra("myname");
 
+		if (bmp != null) {
+			m_handwritingView.setBitmap(bmp);
 			m_undoBtn.setEnabled(false);
 			m_sendBtn.setEnabled(false);
 		} else {
 			this.disableButtons();
 		}
-		this.myname = intent.getStringExtra("myname");
 	}
 
 	private void enableButtons() {
@@ -304,12 +306,14 @@ public class HandwritingActivity extends Activity implements
 	}
 
 	@Override
-	public void onMessage(String name, String msg) {
+	public void onMessage(String sender, String text) {
+		Intent intent = new Intent();
+		intent.putExtra("sender", sender);
+		intent.putExtra("text", text);
+		this.setResult(RESULT_OK, intent);
 		this.finish();
 	}
-
-	@Override
-	public void onBitmap(String name, String filename) {
+	private void showBitmap(String sender, String filename) {
 		class ShowBitmap implements Runnable {
 			private Bitmap bmp;
 			
@@ -317,11 +321,11 @@ public class HandwritingActivity extends Activity implements
 				this.bmp = bmp;
 			}
 
-
 			@Override
 			public void run() {
 				m_handwritingView.setBitmap(this.bmp);
 				m_handwritingView.invalidate();
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 				
 			}
 			
@@ -330,7 +334,11 @@ public class HandwritingActivity extends Activity implements
 		new File(filename).delete();
 
 		this.runOnUiThread(new ShowBitmap(bmp));
-		
 	}
 
+
+	@Override
+	public void onBitmap(String name, String filename) {
+		this.showBitmap(name, filename);
+	}
 }

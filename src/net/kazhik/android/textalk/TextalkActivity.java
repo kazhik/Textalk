@@ -36,6 +36,7 @@ public class TextalkActivity extends Activity implements
 		ChatManager.ReceiveMessageListener, ServiceConnection {
 	private static final String KEY_SPEAK_HISTORY = "speak_history";
 	private static final int REQ_SPEAK = 1001;
+	private static final int REQ_HANDWRITE = 1002;
 	private ChatAdapter chatHistory;
 	private ExpressionTable m_expressionTable;
 	private static final String TAG = "TextalkActivity";
@@ -151,7 +152,7 @@ public class TextalkActivity extends Activity implements
 	{
 		Intent intent = new Intent(TextalkActivity.this, HandwritingActivity.class);
 		intent.putExtra("myname", this.myname);
-		startActivity(intent);
+		startActivityForResult(intent, REQ_HANDWRITE);
 	}
 
 	private void openHistoryDialog()
@@ -197,16 +198,21 @@ public class TextalkActivity extends Activity implements
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
-		if (requestCode == REQ_SPEAK && resultCode == RESULT_OK)
-		{
-			ArrayList<String> results = data.getStringArrayListExtra(
-					RecognizerIntent.EXTRA_RESULTS);
-			
+		if (requestCode == REQ_SPEAK && resultCode == RESULT_OK) {
+			ArrayList<String> results = data
+					.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
 			if (results.isEmpty()) {
-				Toast.makeText(TextalkActivity.this, R.string.no_results, Toast.LENGTH_LONG).show();
+				Toast.makeText(TextalkActivity.this, R.string.no_results,
+						Toast.LENGTH_LONG).show();
 				return;
 			}
-			showRecognitionResultDialog(results);
+			this.showRecognitionResultDialog(results);
+		} else if (requestCode == REQ_HANDWRITE && resultCode == RESULT_OK) {
+			String text = data.getStringExtra("text");
+			String sender = data.getStringExtra("sender");
+			
+			this.showChatMessage(new ChatMessage(ChatMessage.RECEIVED, sender, text));
 		}
 		
 		super.onActivityResult(requestCode, resultCode, data);
@@ -343,7 +349,7 @@ public class TextalkActivity extends Activity implements
 		intent.putExtra("bitmap", filename);
 		intent.putExtra("sender", sender);
 		intent.putExtra("myname", this.myname);
-		this.startActivity(intent);
+		this.startActivityForResult(intent, REQ_HANDWRITE);
 		
 	}
 	@Override
