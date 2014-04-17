@@ -30,6 +30,7 @@
     <string name="empty_message">No devices found. Turn on P2P and perform discovery from the Action Bar</string>
     <string name="connected">%1$sと接続しました</string>
     <string name="disconnected">%1$sとの接続が切れました</string>
+    <string name="renamed">%1$sの名前が%2$sに変わりました</string>
     
     <string name="pref_settings_title">設定</string>
     <string name="pref_expressions_settings_title">履歴の設定</string>
@@ -44,8 +45,8 @@
     <string name="pref_recognition_language_summary">音声認識で使われる言語</string>
 
     <string name="pref_network_settings_title">ネットワーク</string>
-    <string name="pref_network_mode_title">接続方法</string>
-    <string name="pref_network_mode_summary">通信相手との接続方法</string>
+    <string name="pref_connection_mode_title">接続方法</string>
+    <string name="pref_connection_mode_summary">通信相手との接続方法</string>
     <string name="pref_myname_title">名前</string>
     <string name="pref_myname_summary">チャットメッセージに表示される名前</string>
     

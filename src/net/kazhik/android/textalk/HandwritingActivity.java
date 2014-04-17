@@ -39,6 +39,7 @@ public class HandwritingActivity extends Activity implements
 	private Button m_clearBtn;
 	private Button m_sendBtn;
 	private ChatManager chatManager;
+	private String myname;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,7 @@ public class HandwritingActivity extends Activity implements
 		} else {
 			this.disableButtons();
 		}
+		this.myname = getIntent().getStringExtra("myname");
 	}
 
 	private void enableButtons() {
@@ -215,10 +217,26 @@ public class HandwritingActivity extends Activity implements
 		this.unbindService(this);
 	}
 	@Override
+	protected void onPause() {
+		super.onPause();
+		if (this.chatManager != null) {
+			this.chatManager.pause();
+		}
+	}
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (this.chatManager != null) {
+			this.chatManager.resume();
+		}
+
+	}
+	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		Log.d(TAG, "onServiceConnected: " + name.toString());
 		ChatBinder binder = (ChatBinder)service;
 		this.chatManager = binder.getChatManager();
+		this.chatManager.init(this.myname);
 		this.chatManager.addReceiveMessageListener(this);
 	}
 	@Override
@@ -226,23 +244,66 @@ public class HandwritingActivity extends Activity implements
 		Log.d(TAG, "onServiceDisConnected: " + name.toString());
 		
 	}
+	private void setSendButtonEnabled(boolean enable) {
+		class SetSendButtonEnabled implements Runnable {
+			private boolean enable;
+			
+			public SetSendButtonEnabled(boolean enable) {
+				this.enable = enable;
+			}
+			@Override
+			public void run() {
+				m_sendBtn.setEnabled(enable);
+			}
+			
+		};
+
+		this.runOnUiThread(new SetSendButtonEnabled(enable));
+	}
 
 	@Override
 	public void onConnected(String ipaddr, String name) {
-		// TODO toast?
+		this.toast(this.getResources().getString(R.string.connected, name));
+		this.setSendButtonEnabled(true);
+	}
+
+	@Override
+	public void onRenamed(String oldname, String newname) {
+		this.toast(this.getResources().getString(R.string.renamed, oldname, newname));
 		
 	}
 
 	@Override
 	public void onDisconnected(String ipaddr, String name) {
-		// TODO Auto-generated method stub
+		this.toast(this.getResources().getString(R.string.disconnected, name));
+		if (this.chatManager.getConnectionCount() == 0) {
+			this.setSendButtonEnabled(false);
+		}
+	}
+	private void toast(String msg) {
+		class ShowToast implements Runnable {
+			private String msg;
+			public ShowToast(String msg) {
+				this.msg = msg;
+			}
+
+			@Override
+			public void run() {
+				
+				Toast.makeText(HandwritingActivity.this,
+						this.msg,
+						Toast.LENGTH_LONG).show();
+				
+			}
+			
+		};
+		this.runOnUiThread(new ShowToast(msg));
 		
 	}
 
 	@Override
 	public void onMessage(String name, String msg) {
-		// TODO Switch to TextalkActivity
-		
+		this.finish();
 	}
 
 	@Override

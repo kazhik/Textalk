@@ -1,10 +1,18 @@
 ***** Textalk *****
 
-Android application for hard-of hearing people
+Communication tool for hard-of hearing people.
+
+You can make text message with voice recognition, text input or handwriting,
+And show it to hard-of hearing people.
+
+You can also send it each other via WiFi network when both of you have phone or tablet.
+
+This application is useful for those who want to communicate silently.
+For example, in the classroom.
 
 === Copyright and license ===
 
-Copyright (C) 2011 kazhik kazhik@gmail.com
+Copyright (C) 2011-2014 kazhik kazhik@gmail.com
 
 Released under the GNU General Public License v3: http://www.gnu.org/licenses/gpl.html
 

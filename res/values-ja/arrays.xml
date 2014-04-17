@@ -22,12 +22,12 @@
 <item>ja</item>
 <item>en</item>
 </string-array>
-<string-array name="network_mode">
+<string-array name="connection_mode">
 <item>UDP</item>
-<item>WiFi P2P</item>
-<item>WiFiテザリング</item>
+<item>WiFi P2P(試行版)</item>
+<item>WiFiテザリング(二機器間のみ)</item>
 </string-array>
-<string-array name="network_mode_value">
+<string-array name="connection_mode_value">
 <item>udp</item>
 <item>wifi_p2p</item>
 <item>wifi_tethering</item>

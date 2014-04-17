@@ -1,6 +1,5 @@
 package net.kazhik.android.textalk;
 
-import java.util.EmptyStackException;
 import java.util.Stack;
 
 import android.content.Context;
@@ -46,6 +45,7 @@ public class HandwritingView extends View {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
 		this.canvasBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+		this.canvasBitmap.eraseColor(this.m_backgroundColor);
 		m_canvas = new Canvas(this.canvasBitmap);
 
 		if (this.receivedBitmap != null) {
@@ -83,11 +83,17 @@ public class HandwritingView extends View {
 	}
 
 	public void undo(){
-		try {
+		if (!m_pathStack.isEmpty()) {
 			m_pathStack.pop();
-		} catch (EmptyStackException e) {
 		}
 		m_currentPath.reset();
+		this.receivedBitmap = null;
+		
+		this.canvasBitmap.eraseColor(this.m_backgroundColor);
+		for (Path path : m_pathStack) {
+			this.m_canvas.drawPath(path, m_currentPaint);
+		}
+
 		invalidate();
 	}
 	public void clear(){
@@ -138,7 +144,6 @@ public class HandwritingView extends View {
 		}
 
 	}
-
 	public Stack<Path> getDrawingPathStack() {
 		return m_pathStack;
 	}

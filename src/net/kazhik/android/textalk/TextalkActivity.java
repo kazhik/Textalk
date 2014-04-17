@@ -149,8 +149,9 @@ public class TextalkActivity extends Activity implements
 	}
 	public void onClickHandwriteButton(View v)
 	{
-		
-		startActivity(new Intent(TextalkActivity.this, HandwritingActivity.class));
+		Intent intent = new Intent(TextalkActivity.this, HandwritingActivity.class);
+		intent.putExtra("myname", this.myname);
+		startActivity(intent);
 	}
 
 	private void openHistoryDialog()
@@ -316,6 +317,12 @@ public class TextalkActivity extends Activity implements
 	public void onConnected(String ipaddr, String name) {
 		String msg = getResources().getString(R.string.connected, name);
 		this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, name, msg));
+	}
+	@Override
+	public void onRenamed(String oldname, String newname) {
+		String msg = getResources().getString(R.string.renamed, oldname, newname);
+		this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, newname, msg));
+		
 	}
 	@Override
 	public void onDisconnected(String ipaddr, String name) {

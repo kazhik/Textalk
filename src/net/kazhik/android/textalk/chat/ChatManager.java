@@ -21,6 +21,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 	public interface ReceiveMessageListener {
 		void onConnected(String ipaddr, String name);
 		void onDisconnected(String ipaddr, String name);
+		void onRenamed(String oldname, String newname);
 		void onMessage(String name, String msg);
 		void onBitmap(String name, String filename);
 	}
@@ -50,6 +51,9 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		this.m_serverConnect.submit(this.m_server);
 		
 	}
+	public int getConnectionCount() {
+		return this.m_clients.size();
+	}
 	public void addReceiveMessageListener(ReceiveMessageListener listener) {
 		this.m_listener = listener;
 	}
@@ -60,8 +64,9 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		if (conn != null && conn.isConnected()) {
 			Log.i(TAG, "Already connected: " + ipaddr);
 			if (!conn.getName().equals(name)) {
+				String oldname = conn.getName();
 				conn.setName(name);
-				this.m_listener.onConnected(ipaddr, name);
+				this.m_listener.onRenamed(oldname, name);
 			}
 			result = false;
 		} else {
@@ -85,6 +90,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 
 		this.m_clientConnect.submit(client);
 		this.m_clients.put(addr, client);
+		this.m_listener.onConnected(addr, addr);
 		Log.d(TAG, "ChatManager#onClientConnected: " + addr);
 	}
 	
@@ -110,19 +116,25 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		}
 		return true;
 	}
-	public void broadcastBitmap(Bitmap bmp) throws IOException {
+	public boolean broadcastBitmap(Bitmap bmp) throws IOException {
+		if (m_clients.isEmpty()) {
+			return false;
+		}
 		for (ChatConnection client: m_clients.values()) {
 			client.sendBitmap(bmp);
 		}
-		
+		return true;
 	}
 
-	public void broadcastMessage(String text) throws IOException {
+	public boolean broadcastMessage(String text) throws IOException {
+		if (m_clients.isEmpty()) {
+			return false;
+		}
 		for (ChatConnection client: m_clients.values()) {
 			client.sendText(text);
 			Log.d(TAG, "Message was sent to " + client.getName());
 		}
-		
+		return true;
 	}
 	public void sendMessage(String hostName, String text) throws IOException {
 		ChatConnection client = this.m_clients.get(hostName);

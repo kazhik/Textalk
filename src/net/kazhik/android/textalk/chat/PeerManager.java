@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -39,7 +42,7 @@ public class PeerManager implements ConnectionListener {
 	public void init(String myname) {
 		SharedPreferences prefs =
 				PreferenceManager.getDefaultSharedPreferences(this.context);
-		this.networkMode = prefs.getString("network_mode", "udp");
+		this.networkMode = prefs.getString("connection_mode", "udp");
 		
 		this.myname = myname;
 		
@@ -49,6 +52,9 @@ public class PeerManager implements ConnectionListener {
 		} else if (this.networkMode.equals("wifi_p2p")) {
 		    this.wifiBroadcastManager = new WifiBroadcastManager(this.context, this);
 		} else if (this.networkMode.equals("wifi_tethering")) {
+			if (this.isTetheringOn()) {
+				this.connectTetheringClients();
+			}
 		} else {
 			Log.e(TAG, "Unknown network mode: " + this.networkMode);
 		}
@@ -62,7 +68,26 @@ public class PeerManager implements ConnectionListener {
 			this.listener.onNewHost(addr, addr);
 		}
 	}
-	
+
+	private boolean isTetheringOn() {
+		WifiManager wifi = (WifiManager) this.context
+				.getSystemService(Context.WIFI_SERVICE);
+		try {
+			Method method = wifi.getClass().getDeclaredMethod("isWifiApEnabled");
+			method.setAccessible(true);
+			return (Boolean) method.invoke(wifi);
+		} catch (NoSuchMethodException e) {
+			Log.e(TAG, "isTetheringOn", e);
+		} catch (IllegalAccessException e) {
+			Log.e(TAG, "isTetheringOn", e);
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "isTetheringOn", e);
+		} catch (InvocationTargetException e) {
+			Log.e(TAG, "isTetheringOn", e);
+		}
+		return false;
+	}
+
 	public void close() {
 		if (this.networkMode.equals("udp")) {
 			this.udpManager.stop();
