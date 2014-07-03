@@ -22,6 +22,7 @@
     <string name="no_results">No results.</string>
     <string name="confirm_clear">Clear all history?</string>
     <string name="bitmap_sent">Bitmap was sent.</string>
+    <string name="not_connected">Not connected with anyone</string>
     <string name="write_message">Write message:</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>

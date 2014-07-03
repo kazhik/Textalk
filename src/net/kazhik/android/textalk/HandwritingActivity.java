@@ -60,30 +60,20 @@ public class HandwritingActivity extends Activity implements
 		if (filename != null) {
 			bmp = BitmapFactory.decodeFile(filename);
 			new File(filename).delete();
+			if (bmp != null) {
+				m_handwritingView.setBitmap(bmp);
+			}
 		}
 		this.myname = intent.getStringExtra("myname");
 
-		if (bmp != null) {
-			m_handwritingView.setBitmap(bmp);
-			m_undoBtn.setEnabled(false);
-			m_sendBtn.setEnabled(false);
-		} else {
-			this.disableButtons();
-		}
-	}
-
-	private void enableButtons() {
-		this.setButtonEnabled(true);
+		m_undoBtn.setEnabled(false);
+		m_sendBtn.setEnabled(false);
 	}
 
 	private void disableButtons() {
-		this.setButtonEnabled(false);
-	}
-
-	private void setButtonEnabled(boolean enabled) {
-		m_undoBtn.setEnabled(enabled);
-		m_clearBtn.setEnabled(enabled);
-		m_sendBtn.setEnabled(enabled);
+		m_undoBtn.setEnabled(false);
+		m_clearBtn.setEnabled(false);
+		m_sendBtn.setEnabled(false);
 	}
 
 	// http://stackoverflow.com/questions/3611457/android-temporarily-disable-orientation-changes-in-an-activity
@@ -134,7 +124,8 @@ public class HandwritingActivity extends Activity implements
 		} else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
 			m_handwritingView.touchUp(pt);
 
-			this.enableButtons();
+			m_undoBtn.setEnabled(true);
+			m_clearBtn.setEnabled(true);
 		}
 		//disableRotation();
 		this.lockOrientation();
@@ -171,9 +162,14 @@ public class HandwritingActivity extends Activity implements
 	private void broadcastBitmap() {
 		Bitmap bmp = this.m_handwritingView.getBitmap();
 		try {
-			this.chatManager.broadcastBitmap(bmp);
-			Toast.makeText(this, R.string.bitmap_sent,
-					Toast.LENGTH_LONG).show();
+			boolean bSent = this.chatManager.broadcastBitmap(bmp);
+			if (bSent) {
+				Toast.makeText(this, R.string.bitmap_sent,
+						Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(this, R.string.not_connected,
+						Toast.LENGTH_LONG).show();
+			}
 		} catch (IOException e) {
 			Log.e(TAG, "Failed to broadcast bitmap", e);
 		}
@@ -242,6 +238,12 @@ public class HandwritingActivity extends Activity implements
 		this.chatManager = binder.getChatManager();
 		this.chatManager.init(this.myname);
 		this.chatManager.addReceiveMessageListener(this);
+		if (this.chatManager.getConnectionCount() > 0) {
+			m_sendBtn.setEnabled(true);
+		} else {
+			m_sendBtn.setEnabled(false);
+		}
+
 	}
 	@Override
 	public void onServiceDisconnected(ComponentName name) {

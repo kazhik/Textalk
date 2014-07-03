@@ -22,6 +22,7 @@
     <string name="no_results">1件もありません</string>
     <string name="confirm_clear">履歴を消去しますか？</string>
     <string name="bitmap_sent">ビットマップが送信されました</string>
+    <string name="not_connected">送信相手と接続していません</string>
     <string name="write_message">テキストを入力してください</string>
     <string name="label_me">ME</string>
     <string name="label_peers">PEERS</string>
