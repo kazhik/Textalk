@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <color name="textalk_color">#093b4d</color>
-    <color name="status_bar_color">#FF000000</color>
-    <color name="layout_border_color">#FF111111</color>
-    <color name="button_background_color">#dddddd</color>
-</resources>
