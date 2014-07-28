@@ -1,0 +1,34 @@
+{
+  "name": "Textalk",
+  "description": "Textalk",
+  "version": "0.1",
+  "launch_path": "/index.html",
+  "icons": {
+    "60": "/img/hayate60.png",
+    "90": "/img/hayate90.png",
+    "128": "/img/hayate128.png"
+  },
+  "default_locale": "en",
+  "locales": {
+    "en": {
+      "description": "English",
+      "developer": {
+        "url": "https://github.com/kazhik"
+      }
+    }
+  },
+  "developer": {
+    "name": "Koike Kazuhiko",
+    "url": "https://github.com/kazhik"
+  },
+  "type": "privileged",
+  "permissions": {
+    "tcp-socket": {
+      "description": "TCP socket"
+    },
+    "device-storage:sdcard": {
+      "description": "DeviceStorage API",
+      "access": "readwrite"
+    }
+  }
+}

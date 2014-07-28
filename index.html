@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <title>Textalk</title>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <link rel="stylesheet" href="lib/style/jquery.mobile-1.4.3.min.css" />
+    <link rel="stylesheet" href="style/textalk.css" />
+    <link rel="resource" type="application/l10n" href="locales/locales.ini">
+
+    <script src="lib/js/jquery-2.1.1.min.js"></script>
+    <script src="lib/js/jquery.mobile-1.4.3.min.js"></script>
+    <script src="lib/js/l10n.js"></script>
+
+    <script src="js/textalk.js"></script>
+    <script src="js/StringUtil.js"></script>
+    <script src="js/ViewUtil.js"></script>
+    <script src="js/Database.js"></script>
+    <script src="js/Config.js"></script>
+    <script src="js/LogView.js"></script>
+    <script src="js/ConfigView.js"></script>
+    <script src="js/PopupView.js"></script>
+    <script src="js/PanelView.js"></script>
+    <script src="js/TextMessageView.js"></script>
+    <script src="js/CanvasView.js"></script>
+
+</head>
+
+<body>
+
+    <div data-role="page" id="Text" data-theme="a">
+      <div data-role="header">
+
+        <a href="#LeftPanel" data-icon="bars" data-iconpos="notext">Panel</a>
+        <h1>Textalk</h1>
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" id="speak" data-l10n-id="speak">SPEAK</a></li>
+                <li><a href="#" id="write" data-l10n-id="write">WRITE</a></li>
+            </ul>
+        </div>
+      </div> 
+
+      <div data-role="content" data-theme="a">
+        <ul id="messageList" data-role="listview">
+        </ul>
+
+      </div>
+
+      <div data-role="footer" data-position="fixed" data-theme="a">
+          <div data-role="navbar">
+            <ul>
+              <li>
+                <a href="#Text" data-l10n-id="text">TEXT</a>
+              </li>
+              <li>
+                <a href="#Draw" data-l10n-id="draw">DRAW</a>
+              </li>
+            </ul>
+          </div><!-- /navbar -->
+      </div><!-- /footer -->
+
+    </div>     
+
+    <div data-role="page" id="Draw" data-theme="a">
+      <div data-role="header">
+
+        <a href="#LeftPanel" data-icon="bars" data-iconpos="notext">Panel</a>
+        <h1>Textalk</h1>
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" id="undo-draw" data-l10n-id="undo">UNDO</a></li>
+                <li><a href="#" id="clear-draw" data-l10n-id="clear">CLEAR</a></li>
+                <li><a href="#" id="send-draw" data-l10n-id="send">SEND</a></li>
+            </ul>
+        </div>
+      </div> 
+
+      <div data-role="content" id="draw-content" data-theme="a" style="padding: 0px">
+        <canvas id="hwCanvas">
+        </canvas>        
+      </div>
+
+      <div data-role="footer" data-position="fixed" data-theme="a">
+          <div data-role="navbar">
+            <ul>
+              <li>
+                <a href="#Text" data-l10n-id="text">TEXT</a>
+              </li>
+              <li>
+                <a href="#Draw" data-l10n-id="draw">DRAW</a>
+              </li>
+            </ul>
+          </div><!-- /navbar -->
+      </div><!-- /footer -->
+
+    </div>     
+    
+    <div data-role="page" id="Log" data-theme="a">
+      <div data-role="header">
+        <a href="#" data-rel="back" data-icon="arrow-l" data-iconpos="notext">Back</a>
+    
+        <h1 data-l10n-id="log">Textalk</h1>
+
+        <a href="#" id="delete-log" data-icon="delete" data-iconpos="notext">Back</a>
+      </div> 
+
+      <div data-role="content" data-theme="a">
+        <ul id="logList" data-role="listview">
+        </ul>    
+      </div>
+        
+    </div><!-- /page Log -->
+
+    <div data-role="page" id="Settings" data-theme="a">
+      <div data-role="header">
+        <a href="#" id="close-settings"
+           data-rel="back" data-icon="arrow-l" data-iconpos="notext">Back</a>
+    
+        <h1 data-l10n-id="settings">Textalk</h1>
+
+        <a href="#" id="reset-conf" data-icon="refresh" data-iconpos="notext">Reset</a>
+      </div>
+      <div data-role="content" data-theme="a">
+        <ul data-role="listview">
+          <li data-role="collapsible" data-iconpos="right" data-shadow="false" data-corners="false">
+            <h2 data-l10n-id="debug">Debug</h2>
+            <form>
+              <label data-l10n-id="log" for="flip-debug-log">Log</label>
+              <select id="flip-debug-log" name="flip-debug-log" data-role="slider" data-mini="true">
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+              </select>            
+            </form>
+          </li>
+        </ul>
+          
+        
+      </div>
+        
+    </div><!-- /page Settings -->
+    
+    
+    <div id="popup"></div>
+
+    
+    <div data-role="panel" id="LeftPanel" data-position="left" data-display="reveal" data-theme="a">
+      <ul id="panel-menu" data-role="listview">
+        <li data-icon="bullets"><a data-l10n-id="history" href="#History">HISTORY</a></li>
+        <li data-icon="gear"><a data-l10n-id="settings" href="#Settings">SETTINGS</a></li>
+        <li data-icon="info"><a data-l10n-id="about" id="open-about" href="#">ABOUT</a></li>
+      </ul>
+    </div><!-- /LeftPanel -->
+
+</body>
+</html>
