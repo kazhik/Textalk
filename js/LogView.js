@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.LogView = function() {
+Textalk.LogView = (function() {
     function init() {
         $("#logList").listview().listview("refresh");
         $("#delete-log").on("tap", clearLog);
@@ -49,11 +49,7 @@ Textalk.LogView = function() {
 
     }
     
-    var publicObj = {};
-    
-    publicObj.init = function() {
-        init();
+    return {
+        init: init
     };
-    
-    return publicObj;
-}();
+}());

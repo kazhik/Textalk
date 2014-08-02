@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.Database = function() {
+Textalk.Database = (function() {
     function executeCommand(osname, command, args) {
         var osCommand = {
             "add": function() {
@@ -270,42 +270,35 @@ Textalk.Database = function() {
         return dfd.promise();
     }
 
-    var db;
-    var publicObj = {};
-
-    publicObj.deleteDatabase = function (dbname) {
-        return deleteDatabase(dbname);
-    };
-    publicObj.open = function (dbInfo) {
-        return open(dbInfo);
-    };
-    publicObj.add = function (osname, data) {
+    function add(osname, data) {
         return executeCommand(osname, "add", [data]);
-    };
-    publicObj.put = function (osname, data) {
+    }
+    function put(osname, data) {
         return executeCommand(osname, "put", [data]);
-    };
-    publicObj.clear = function (osname) {
+    }
+    function clear(osname) {
         return executeCommand(osname, "clear");
-    };
-    publicObj.remove = function (osname, keyValue) {
-        return remove(osname, keyValue);
-    };
-    publicObj.get = function (osname, keyValue) {
-        return get(osname, keyValue);
-    };
-    publicObj.getItemList = function (osname, itemArray) {
-        return getItemList(osname, itemArray);
-    };
-    publicObj.getKeyList = function (osname) {
-        return getKeyList(osname);
-    };
-    publicObj.addItem = function(osname, keyValue, itemName, itemValue) {
+    }
+    function addItem(osname, keyValue, itemName, itemValue) {
         return executeUpdateCommand(osname, "add", keyValue, itemName, itemValue);
-    };
-    publicObj.setItem = function(osname, keyValue, itemName, itemValue) {
+    }
+    function setItem(osname, keyValue, itemName, itemValue) {
         return executeUpdateCommand(osname, "set", keyValue, itemName, itemValue);
-    };
+    }
+
+    var db;
     
-    return publicObj;
-}();
+    return {
+        addItem: addItem,
+        setItem: setItem,
+        getKeyList: getKeyList,
+        getItemList: getItemList,
+        get: get,
+        remove: remove,
+        clear: clear,
+        put: put,
+        add: add,
+        deleteDatabase: deleteDatabase,
+        open: open
+    };
+}());

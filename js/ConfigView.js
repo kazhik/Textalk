@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.ConfigView = function() {
+Textalk.ConfigView = (function() {
     function onClose() {
         var config = {
             "debug": {
@@ -57,13 +57,7 @@ Textalk.ConfigView = function() {
         
     }
     
-    var publicObj = {};
-    
-    publicObj.init = function() {
-        init();
-        
+    return {
+        init: init
     };
-    
-    
-    return publicObj;
-}();
+}());

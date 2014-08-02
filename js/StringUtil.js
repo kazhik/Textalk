@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.StringUtil = function() {
+Textalk.StringUtil = (function() {
 
     function formatElapsedTime(msec) {
         var hour = ("0" + Math.floor(msec / (1000 * 60 * 60))).slice(-2);
@@ -34,4 +34,4 @@ Textalk.StringUtil = function() {
     };
     
     return publicObj;
-}();
+}());

@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.ViewUtil = function() {
+Textalk.ViewUtil = (function() {
     function getHeaderHeight() {
         var headerHeight = 0;
         var header = $.mobile.activePage.find("div[data-role='header']:visible");
@@ -41,17 +41,10 @@ Textalk.ViewUtil = function() {
         return contentHeight;
     }
     
-    var publicObj = {};
-    
-    publicObj.getRealContentHeight = function() {
-        return getRealContentHeight();    
+    return {
+        getRealContentHeight: getRealContentHeight,
+        getContentHeight: getContentHeight,
+        getHeaderHeight: getHeaderHeight
     };
-    publicObj.getContentHeight = function() {
-        return getContentHeight();    
-    };
-    publicObj.getHeaderHeight = function() {
-        return getHeaderHeight();
-    }
     
-    return publicObj;
-}();
+}());

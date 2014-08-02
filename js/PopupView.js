@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.PopupView = function() {
+Textalk.PopupView = (function() {
 
     function init() {
 
@@ -43,20 +43,11 @@ Textalk.PopupView = function() {
         console.log(message);
         $("#popup").load("toast.html", onLoad);
     }
-    var publicObj = {};
-    
-    publicObj.init = function() {
-        init();
+
+    return {
+        init: init,
+        openAboutDialog: openAboutDialog,
+        openConfirmDialog: openConfirmDialog,
+        toast: toast
     };
-    publicObj.openAboutDialog = function() {
-        openAboutDialog();  
-    };
-    publicObj.openConfirmDialog = function(txtTitle, txtMessage, txtButton, callback) {
-        openConfirmDialog(txtTitle, txtMessage, txtButton, callback);
-    };
-    publicObj.toast = function(message) {
-        toast(message);
-    };
-    
-    return publicObj;
-}();
+}());

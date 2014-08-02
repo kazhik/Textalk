@@ -15,7 +15,7 @@ Textalk.start = function() {
 
         // Main Tabs
         Textalk.CanvasView.init();
-        Textalk.TextMessageView.init();
+        Textalk.TextView.init();
 
     }
     function localize() {

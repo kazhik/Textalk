@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.Config = function() {
+Textalk.Config = (function() {
     var configDefault = {
         "appname": "Textalk",
         "geolocation": {
@@ -102,23 +102,13 @@ Textalk.Config = function() {
     }
     var config = {};
     
-    var publicObj = {};
-    
-    publicObj.get = function(keys) {
-        return get(keys);
-    };
-    publicObj.set = function(keys, value) {
-        set(keys, value);
+    return {
+        get: get,
+        set: set,
+        save: save,
+        load: load,
+        reset: reset
     };
 
-    publicObj.save = function(newConfig) {
-        return save(newConfig);
-    };
-    publicObj.load = function() {
-        return load();
-    };
-    publicObj.reset = function() {
-        return reset();
-    };
-    return publicObj;
-}();
+    
+}());

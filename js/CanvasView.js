@@ -3,7 +3,7 @@
 if (Textalk === undefined) {
     var Textalk = {};
 }
-Textalk.CanvasView = function() {
+Textalk.CanvasView = (function() {
     var canvasCtx;
     var canvas;
     var headerHeight = 0;
@@ -94,14 +94,11 @@ Textalk.CanvasView = function() {
         $("#undo-draw").on("tap", undo);
         
         $("#Draw").on("pageshow", onPageShow);
+        
+        pathList.length = 0;
     }
     
-    var publicObj = {};
-    
-    publicObj.init = function() {
-        init();
-        pathList.length = 0;
+    return {
+        init: init
     };
-    
-    return publicObj;
-}();
+}());
