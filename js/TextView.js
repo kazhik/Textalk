@@ -4,6 +4,7 @@ if (Textalk === undefined) {
     var Textalk = {};
 }
 Textalk.TextView = (function() {
+    var dlg = null;
     function openEditTextDialog() {
         function onLoadDialog() {
             function ignoreEnter(e) {
@@ -11,34 +12,40 @@ Textalk.TextView = (function() {
                     e.preventDefault();
                 }
             }
-            function onOk() {
-                var txt = $("#input-text").val();
-                console.log("onOk:" + txt);
-                dfd.resolve($("#input-text").val());
-                
-            }
-            function onCancel() {
-                dfd.reject();
-            }
+            $("#ok").on("tap", onOk);
+            $("#cancel").on("tap", onCancel);
             
             $("#dialog-title").text(navigator.mozL10n.get("edit-text-title"));
             $("#label-text").text(navigator.mozL10n.get("label-text"));
             $("#cancel").text(navigator.mozL10n.get("cancel"));
             $("#ok").text(navigator.mozL10n.get("ok"));
-            
+
             $("#input-text").textinput();
-        
-            $("#ok").on("tap", onOk);
-            $("#cancel").on("tap", onCancel);
-
-            $("#edit-dialog").popup().popup("open");
-
             $("#input-text").keypress(ignoreEnter);
+
+            dlg = $("#edit-dialog").popup();
             
+            dlg.popup("open", {positionTo: "#write"});
             $("#input-text").val("");
             
         }
-        $("#popup").load("edit-dialog.html", onLoadDialog);
+        function onOk() {
+            var txt = $("#input-text").val();
+            dlg.popup("close");                
+            dfd.resolve(txt);
+        }
+        function onCancel() {
+            dlg.popup("close");                
+            dfd.reject();
+        }
+        if (dlg === null) {
+            $("#popup").load("edit-dialog.html", onLoadDialog);
+        } else {
+            $("#ok").on("tap", onOk);
+            $("#cancel").on("tap", onCancel);
+            dlg.popup("open", {positionTo: "#write"});
+            $("#input-text").val("");
+        }
 
         var dfd = new $.Deferred();
     
@@ -46,27 +53,52 @@ Textalk.TextView = (function() {
         
     }
     function speak() {
-        // Voice recognition API doesn't exist now.
+        Textalk.PopupView.toast("Not implemented yet");
+    }
+    function history() {
+        Textalk.PopupView.toast("Not implemented yet");
     }
     function write() {
         function onOk(text) {
-            console.log("text: " + text);
-            $("#messageList")
-                .append($("<li/>")
-                    .append(text))
-                .listview("refresh");            
-            
+            enter(text);
         }
         openEditTextDialog()
             .done(onOk);
     }
-
+    function enter(text) {
+        var currTime = Textalk.StringUtil.formatTime(Date.now());
+        var msginfo = "(" + currTime + ")";
+        $("#messageList")
+            .append($("<li/>")
+                .append($("<p/>", {
+                    "class": "msg-text",
+                    "text": text}
+                    ))
+                .append($("<div/>",{
+                    "class": "msg-info",
+                    "text": msginfo}
+                    ))
+            )
+            .listview("refresh");
+        
+    }
+    function onEnter(e) {
+        var txt = $("#message-text").val();
+        enter(txt);
+        $("#message-text").val("");
+    }
+    function setMessageListHeight() {
+        $('#messageList').height(Textalk.ViewUtil.getContentHeight());
+    }
     function init() {
         $("#messageList").listview().listview("refresh");
 
         $("#speak").on("tap", speak);
         $("#write").on("tap", write);
+        $("#history").on("tap", history);
+        $("#enter").on("tap", onEnter);
      
+        setMessageListHeight();
     }
 
     return {

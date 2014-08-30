@@ -4,9 +4,9 @@
   "version": "0.1",
   "launch_path": "/index.html",
   "icons": {
-    "60": "/img/hayate60.png",
-    "90": "/img/hayate90.png",
-    "128": "/img/hayate128.png"
+    "60": "/img/textalk60.png",
+    "90": "/img/textalk90.png",
+    "128": "/img/textalk128.png"
   },
   "default_locale": "en",
   "locales": {

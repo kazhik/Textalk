@@ -69,6 +69,9 @@ Textalk.CanvasView = (function() {
         pathList.pop();
         redraw();
     }
+    function send() {
+        Textalk.PopupView.toast("Not implemented yet");
+    }
     function redraw() {
         function drawPath(path, index) {
             for (var i = 0; i < path.length; i++) {
@@ -92,6 +95,7 @@ Textalk.CanvasView = (function() {
     function init() {
         $("#clear-draw").on("tap", clear);
         $("#undo-draw").on("tap", undo);
+        $("#send-draw").on("tap", send);
         
         $("#Draw").on("pageshow", onPageShow);
         

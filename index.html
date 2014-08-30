@@ -4,12 +4,12 @@
 <head>
     <title>Textalk</title>
 
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <link rel="stylesheet" href="lib/style/jquery.mobile-1.4.3.min.css" />
     <link rel="stylesheet" href="lib/style/icon-pack-custom.css" />
     <link rel="stylesheet" href="style/textalk.css" />
-    <link rel="resource" type="application/l10n" href="locales/locales.ini">
+    <link rel="resource" type="application/l10n" href="locales/locales.ini" />
 
     <script src="lib/js/jquery-2.1.1.min.js"></script>
     <script src="lib/js/jquery.mobile-1.4.3.min.js"></script>
@@ -42,6 +42,7 @@
             <ul>
                 <li><a href="#" id="speak" data-l10n-id="speak">SPEAK</a></li>
                 <li><a href="#" id="write" data-l10n-id="write">WRITE</a></li>
+                <li><a href="#" id="history" data-l10n-id="history">HISTORY</a></li>
             </ul>
         </div>
       </div> 
@@ -53,12 +54,10 @@
       </div>
 
       <div data-role="footer" data-position="fixed" data-theme="a">
-        <form>
-<div data-role="controlgroup" data-type="horizontal">
-    <input id="send-text" data-wrapper-class="controlgroup-textinput ui-btn" type="text">
-    <button id="send-button" data-l10n-id="Send">Send</button>
-</div>
-        </form>
+        <div data-role="controlgroup" data-type="horizontal">
+            <input id="message-text" data-wrapper-class="controlgroup-textinput ui-btn" type="text" />
+            <button id="enter" data-l10n-id="enter">ENTER</button>
+        </div>
       </div><!-- /footer -->
 
     </div>     
@@ -135,7 +134,6 @@
     
     <div data-role="panel" id="LeftPanel" data-position="left" data-display="reveal" data-theme="a">
       <ul id="panel-menu" data-role="listview">
-        <li data-icon="bullets"><a data-l10n-id="history" href="#History">HISTORY</a></li>
         <li data-icon="gear"><a data-l10n-id="settings" href="#Settings">SETTINGS</a></li>
         <li data-icon="info"><a data-l10n-id="about" id="open-about" href="#">ABOUT</a></li>
       </ul>

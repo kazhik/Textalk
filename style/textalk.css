@@ -8,5 +8,12 @@
 div.controlgroup-textinput {
     padding: 3px;
 }
-
+.msg-text {
+    font-size: large !important;
+    text-align: right;
+}
+.msg-info {
+    font-size: small;
+    text-align: right;
+}
 
