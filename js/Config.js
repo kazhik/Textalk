@@ -6,33 +6,8 @@ if (Textalk === undefined) {
 Textalk.Config = (function() {
     var configDefault = {
         "appname": "Textalk",
-        "geolocation": {
-            "min" : {
-                "accuracy": 50,
-                "altAccuracy": 50,
-                "timeInterval": 5,
-                "distanceInterval": 10
-            },
-            "autoLap": {
-                "on": "off",
-                "distance": 1000
-            },
-            "pace": {
-                "type": "average-pace"  
-            },
-            "distanceUnit": "metre"
-        },
-        "map": {
-            "type": "GoogleMap",
-            "url": {
-                "GoogleMap": "http://kazhik.github.io/Textalk/map/gmap.html",
-                "OpenStreetMap": "http://kazhik.github.io/Textalk/map/omap.html"
-            },
-            "zoom": 16
-        },
         "debug": {
             "log": "on",
-            "export": "position"
         }
     };
     function get(keys) {
@@ -64,8 +39,6 @@ Textalk.Config = (function() {
             dfd.reject(err);
         };
 
-        config["geolocation"] = newConfig["geolocation"];
-        config["map"] = newConfig["map"];
         config["debug"] = newConfig["debug"];
 
         var dfd = new $.Deferred();
