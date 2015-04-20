@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title>Textalk</title>
+
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="lib/ionic/css/ionicons.css" rel="stylesheet">
+    <link href="css/angular-csp.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- ionic/angularjs js -->
+    <script src="lib/ionic/js/ionic.bundle.js" defer></script>
+
+    <!-- cordova script (this will be a 404 during development) -->
+    <script src="cordova.js"></script>
+
+    <!-- i18n -->
+    <script src="lib/ionic/js/angular/angular-translate.js" defer></script>
+        
+    <script src="js/databaseService.js" defer></script>
+    <script src="js/tcpService.js" defer></script>
+
+    <script src="js/textalk.js" defer></script>
+
+    <script src="js/constants.js" defer></script>
+    <script src="js/translationsConf.js" defer></script>
+
+    <script src="js/configService.js" defer></script>
+    <script src="js/chatService.js" defer></script>
+    
+    <script src="js/drawDirective.js" defer></script>
+
+    <script src="js/drawCtrl.js" defer></script>
+    <script src="js/menuCtrl.js" defer></script>
+    <script src="js/writeCtrl.js" defer></script>
+
+  </head>
+
+  <body ng-app="textalk"
+        ng-csp
+        class="platform-firefoxos platform-cordova platform-webview">
+    <ion-nav-view></ion-nav-view>
+  </body>
+</html>

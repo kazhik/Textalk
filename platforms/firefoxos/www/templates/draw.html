@@ -1,0 +1,41 @@
+<ion-nav-bar class="bar-stable">
+  <ion-nav-back-button>
+  </ion-nav-back-button>
+
+  <ion-nav-buttons side="left">
+    <button class="button button-icon button-clear ion-navicon"
+            menu-toggle="left">
+    </button>
+  </ion-nav-buttons>
+  <ion-nav-title>{{'appname' | translate}}</ion-nav-title>
+  <ion-nav-buttons side="right">
+    <a class="button icon ion-edit"
+     ui-sref="app.write"       
+    　side="right">
+    </a>
+  </ion-nav-buttons>
+</ion-nav-bar>
+
+<ion-header-bar class="bar bar-subheader">
+    <button class="button icon ion-ios-trash"
+            ng-click="clear()">{{'clear' | translate}}</button>
+    <button class="button icon ion-ios-undo"
+            ng-click="undo()">{{'undo' | translate}}</button>
+    <button class="button icon ion-ios-paperplane"
+            ng-click="send()">{{'send' | translate}}</button>
+</ion-header-bar>
+
+<ion-view>
+
+  <ion-content class="has-header has-subheader">
+
+    <draw
+          width="{{canvas.width}}"
+          height="{{canvas.height}}"
+          line-width="1"
+          stroke-style="black"
+          control="CanvasControl"></draw>
+  
+  </ion-content>
+  
+</ion-view>

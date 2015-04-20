@@ -1,0 +1,35 @@
+{
+    "name": "Textalk",
+    "description": "Textalk",
+    "launch_path": "/index.html",
+    "installs_allowed_from": [
+        "*"
+    ],
+    "version": "0.1",
+    "name": "Textalk",
+    "icons": {
+        "60": "/icon/icon-60.png",
+        "128": "/icon/icon-128.png"
+    },
+    "locales": {
+        "ja": {
+            "launch_path": "/index_ja.html"
+        }
+    },
+    "default_locale": "en",
+    "developer": {
+        "name": "Koike Kazuhiko",
+        "url": "https://github.com/kazhik"
+    },
+    "type": "privileged",
+    "permissions": {
+        "nfc": {},
+        "tcp-socket": {},
+        "device-storage:sdcard": {
+            "description": "DeviceStorage API",
+            "access": "readwrite"
+        }
+    }
+
+
+}

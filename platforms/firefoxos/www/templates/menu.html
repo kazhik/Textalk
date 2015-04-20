@@ -1,0 +1,21 @@
+
+<ion-side-menus enable-menu-with-back-views="false">
+  <ion-side-menu-content drag-content="false">
+    <ion-nav-view name="appContent"></ion-nav-view>
+  </ion-side-menu-content>
+  <ion-side-menu side="left">
+    <ion-content>
+      <ion-list>
+        <ion-item nav-clear menu-close ng-click="openConfig()">
+          {{'setting' | translate}}
+        </ion-item>
+        <ion-item nav-clear menu-close ng-click="openAbout()">
+          {{'about' | translate}}
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-side-menu>
+</ion-side-menus>
+
+
+

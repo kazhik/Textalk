@@ -1,0 +1,66 @@
+<script id="history.html" type="text/ng-template">
+  <ion-modal-view>
+    <ion-header-bar>
+      <h1 class="title">History</h1>
+      <div class="button button-clear" ng-click="modal.hide()">
+        <span class="icon ion-close"></span>
+      </div>
+    </ion-header-bar>
+    <ion-content>
+      <ion-list>
+        <ion-item
+                  ng-click="onSelect(historyItem)"
+                  ng-repeat="historyItem in historyList track by historyItem.body">
+          {{historyItem.body}}
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-modal-view>
+</script>
+
+<ion-nav-bar class="bar-stable">
+  <ion-nav-back-button>
+  </ion-nav-back-button>
+
+  <ion-nav-buttons side="left">
+    <button class="button button-icon button-clear ion-navicon"
+            menu-toggle="left">
+    </button>
+  </ion-nav-buttons>
+  <ion-nav-title>{{'appname' | translate}}</ion-nav-title>
+  <ion-nav-buttons side="right">
+    <a class="button icon ion-paintbrush"
+     ui-sref="app.draw"       
+    　side="right">
+    </a>
+
+
+  </ion-nav-buttons>
+</ion-nav-bar>
+
+<ion-view>
+  
+  <ion-content class="has-header">
+    <ion-list>
+      <ion-item class="card" ng-repeat="msg in msgs">
+        <div class="item item-text-wrap">{{msg.body}}</div>
+        <div style="text-align: right">{{msg.timestamp | date: "medium"}}</div>
+      </ion-item>
+    </ion-list>
+
+  </ion-content>
+  
+  <div style="position: absolute; bottom: 0px; width: 100%">
+    
+    <div class="list">
+      <div class="item item-input-inset">
+        <button class="button button-small icon ion-ios-albums"
+         ng-click="openHistoryDialog()">
+        </button>
+        <form ng-submit="onSubmit(msgtext)" class="item-input-wrapper">
+            <input type="text" ng-model="msgtext">
+        </form>
+      </div>
+    </div>
+  </div>      
+</ion-view>
