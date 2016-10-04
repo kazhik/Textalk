@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@android:color/background_light"
+    android:orientation="vertical" >
+
+    <LinearLayout
+        android:id="@+id/buttonBar"
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/speakButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClickSpeakButton"
+            android:background="@color/button_background_color"
+            android:text="@string/button_speak" />
+
+        <Button
+            android:id="@+id/writeButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClickWriteButton"
+            android:background="@color/button_background_color"
+            android:text="@string/button_write" />
+
+        <Button
+            android:id="@+id/handwriteButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="onClickHandwriteButton"
+            android:background="@color/button_background_color"
+            android:text="@string/button_handwrite" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/textList"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/buttonBar" />
+
+</RelativeLayout>

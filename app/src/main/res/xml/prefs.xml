@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/pref_settings_title" >
+
+    <PreferenceCategory android:title="@string/pref_expressions_settings_title" >
+
+        <ListPreference
+            android:dialogTitle="@string/pref_expressions_max_dialogtitle"
+            android:entries="@array/expressions_max"
+            android:entryValues="@array/expressions_max_value"
+            android:key="expressions_max"
+            android:summary="@string/pref_expressions_max_summary"
+            android:title="@string/pref_expressions_max_title" />
+        
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/pref_recognition_settings_title" >
+
+        <ListPreference
+            android:dialogTitle="@string/pref_recognition_language_dialogtitle"
+            android:entries="@array/recognition_languages"
+            android:entryValues="@array/recognition_languages_value"
+            android:key="recognition_language"
+            android:summary="@string/pref_recognition_language_summary"
+            android:title="@string/pref_recognition_language_title" />
+     </PreferenceCategory>
+     
+     <PreferenceCategory android:title="@string/pref_network_settings_title" >
+        <ListPreference
+            android:dialogTitle="@string/pref_connection_mode_title"
+            android:entries="@array/connection_mode"
+            android:entryValues="@array/connection_mode_value"
+            android:key="connection_mode"
+            android:summary="@string/pref_connection_mode_summary"
+            android:title="@string/pref_connection_mode_title" />
+        <EditTextPreference
+            android:key="myname"
+            android:summary="@string/pref_myname_summary"
+            android:title="@string/pref_myname_title" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
