@@ -1,19 +1,19 @@
 package net.kazhik.android.textalk.chat;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
+
+import net.kazhik.android.textalk.ExportBitmap;
+
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import net.kazhik.android.textalk.ExportBitmap;
-import android.content.Context;
-import android.graphics.Bitmap;
-import android.os.Handler;
-import android.os.Message;
-import android.os.PowerManager;
-import android.util.Log;
 
 
 
@@ -29,7 +29,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 	private ExecutorService m_serverConnect = Executors.newSingleThreadExecutor();
 	private ExecutorService m_clientConnect = Executors.newCachedThreadPool();
 	private ChatServer m_server;
-	private Map<String, ChatConnection> m_clients = new ConcurrentHashMap<String, ChatConnection>();
+	private Map<String, ChatConnection> m_clients = new ConcurrentHashMap<>();
 	private ReceiveMessageListener m_listener;
 	private static final String TAG = "ChatManager";
 	
@@ -37,7 +37,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 	private PeerManager peerManager = null;
 
 	
-	public ChatManager(Context context) {
+	ChatManager(Context context) {
 		this.context = context;
 	}
 	public void init(String myname) {
@@ -59,7 +59,7 @@ public class ChatManager implements ChatServer.ConnectionListener,
 		this.m_listener = listener;
 	}
 	
-	public boolean connect(String ipaddr, String name) {
+	private boolean connect(String ipaddr, String name) {
 		boolean result;
 		ChatConnection conn = this.m_clients.get(ipaddr);
 		if (conn != null && conn.isConnected()) {

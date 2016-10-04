@@ -141,13 +141,13 @@ public class WifiBroadcastManager extends BroadcastReceiver implements
 		}
 	}
 	public void resume() {
-		if (this.receiverRegistered == false) {
+		if (!this.receiverRegistered) {
 			this.context.registerReceiver(this, this.intentFilter);
 			this.receiverRegistered = true;
 		}
 	}
 	public void pause() {
-		if (this.receiverRegistered == true) {
+		if (this.receiverRegistered) {
 			this.context.unregisterReceiver(this);
 			this.receiverRegistered = false;
 		}

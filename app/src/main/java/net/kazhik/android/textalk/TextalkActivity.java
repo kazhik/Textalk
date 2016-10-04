@@ -1,20 +1,5 @@
 package net.kazhik.android.textalk;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.RunnableFuture;
-
-import net.kazhik.android.textalk.chat.ChatAdapter;
-import net.kazhik.android.textalk.chat.ChatManager;
-import net.kazhik.android.textalk.chat.ChatMessage;
-import net.kazhik.android.textalk.chat.ChatService;
-import net.kazhik.android.textalk.chat.ChatService.ChatBinder;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -38,7 +23,16 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import static android.R.attr.name;
+import net.kazhik.android.textalk.chat.ChatAdapter;
+import net.kazhik.android.textalk.chat.ChatManager;
+import net.kazhik.android.textalk.chat.ChatMessage;
+import net.kazhik.android.textalk.chat.ChatService;
+import net.kazhik.android.textalk.chat.ChatService.ChatBinder;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class TextalkActivity extends Activity implements
 		ChatManager.ReceiveMessageListener, ServiceConnection {
@@ -92,7 +86,7 @@ public class TextalkActivity extends Activity implements
 	    	return;
 	    }
 		int count = this.chatHistory.getCount();
-		ArrayList<ChatMessage> speakHistoryList = new ArrayList<ChatMessage>();
+		ArrayList<ChatMessage> speakHistoryList = new ArrayList<>();
 		for (int i = 0; i < count; i++) {
 			speakHistoryList.add((ChatMessage)this.chatHistory.getItem(i));
 		}
@@ -302,7 +296,7 @@ public class TextalkActivity extends Activity implements
 			private ChatAdapter chatAdapter;
 			private ChatMessage msg;
 
-			public ShowChatMessage(ChatAdapter chatAdapter, ChatMessage msg) {
+			private ShowChatMessage(ChatAdapter chatAdapter, ChatMessage msg) {
 				this.chatAdapter = chatAdapter;
 				this.msg = msg;
 			}

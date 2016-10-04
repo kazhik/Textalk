@@ -11,13 +11,13 @@ import java.util.List;
 
 import android.util.Log;
 
-public class UdpBroadcast implements Runnable {
+class UdpBroadcast implements Runnable {
 	private static final String TAG = "BroadcastLocalAddress";
 
 	private DatagramSocket m_socket;
 	private DatagramPacket m_packet;
 
-	public boolean init(InetAddress localAddr, int targetPort, String sendData) {
+	boolean init(InetAddress localAddr, int targetPort, String sendData) {
 
 		try {
 			m_socket = new DatagramSocket();

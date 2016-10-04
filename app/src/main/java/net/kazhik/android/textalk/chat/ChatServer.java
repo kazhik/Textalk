@@ -9,17 +9,17 @@ import java.net.SocketException;
 import android.util.Log;
 
 class ChatServer implements Runnable {
-	public interface ConnectionListener {
+	interface ConnectionListener {
 		void onClientConnected(Socket sock);
 	}
 
-	public static final int PORT = 5056;
+	static final int PORT = 5056;
 	private ConnectionListener m_listener;
 	private ServerSocket m_serverSocket;
 	private static final String TAG = "ChatServer";
 
 
-	public ChatServer(ConnectionListener listener) {
+	ChatServer(ConnectionListener listener) {
 		m_listener = listener;
 	}
 	

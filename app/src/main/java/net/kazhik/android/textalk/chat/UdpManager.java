@@ -17,23 +17,23 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-public class UdpManager implements UdpReceiver.MessageListener {
+class UdpManager implements UdpReceiver.MessageListener {
 
 	private ScheduledExecutorService m_sender =
 			Executors.newScheduledThreadPool(1);
 	private ExecutorService m_receiver =
 			Executors.newSingleThreadExecutor();
 
-	public static final int PORT = 5057;
+	private static final int PORT = 5057;
 	private InetAddress localAddr;
 	private Map<String, Long> m_remoteAddrs =
-			new ConcurrentHashMap<String, Long>();
+			new ConcurrentHashMap<>();
 	private UdpReceiver receiveTask = null;
 	private static final int BUFFSIZE = 128;
 	private static final String TAG = "UdpManager";
 	private ConnectionListener m_listener;
 	
-	public void start(Context context, String sendData, ConnectionListener listener) {
+	void start(Context context, String sendData, ConnectionListener listener) {
 		m_listener = listener;
 		
 		WifiManager wifiManager =
@@ -50,7 +50,7 @@ public class UdpManager implements UdpReceiver.MessageListener {
 		this.startRefresh();
 		this.startBroadcasting(sendData);
 	}
-	public void stop() {
+	void stop() {
 		m_sender.shutdown();
 		if (this.receiveTask != null) {
 			this.receiveTask.close();

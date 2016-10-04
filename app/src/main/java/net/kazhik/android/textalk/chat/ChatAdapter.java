@@ -19,8 +19,8 @@ import android.widget.TextView;
 public class ChatAdapter extends BaseAdapter {
 
 	private static class ViewHolder {
-		public TextView message;
-		public TextView info;
+		TextView message;
+		TextView info;
 	}
 
 	private Context context;
@@ -85,7 +85,7 @@ public class ChatAdapter extends BaseAdapter {
 		
 		holder.info.setText(infoTxt);
 		
-		int gravity = message.isSent() ? Gravity.RIGHT : Gravity.LEFT;
+		int gravity = message.isSent() ? Gravity.END : Gravity.START;
 		
 		LayoutParams lp;
 

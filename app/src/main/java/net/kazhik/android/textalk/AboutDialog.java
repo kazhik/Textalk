@@ -16,15 +16,14 @@ import android.widget.TextView;
 
 public class AboutDialog extends DialogFragment {
 	public static AboutDialog newInstance() {
-		
-		AboutDialog frag = new AboutDialog();
-		return frag;
+
+		return new AboutDialog();
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		Activity activity = getActivity();
-		PackageInfo pkgInfo = null;
+		PackageInfo pkgInfo;
 		try {
 			pkgInfo = activity.getPackageManager().getPackageInfo(
 					activity.getPackageName(), PackageManager.GET_META_DATA);
@@ -34,13 +33,12 @@ public class AboutDialog extends DialogFragment {
 		}
 		
 		Resources res = getResources();
-		StringBuffer aboutText = new StringBuffer();
-		aboutText.append(res.getString(R.string.app_name));
-		aboutText.append("\n\n");
-		aboutText.append("Version: " + pkgInfo.versionName);
-		aboutText.append("\n");
-		aboutText.append("Website: github.com/kazhik/Textalk");
-		final SpannableString sstr = new SpannableString(aboutText.toString());
+		String aboutText = res.getString(R.string.app_name) +
+				"\n\n" +
+				"Version: " + pkgInfo.versionName +
+				"\n" +
+				"Website: github.com/kazhik/Textalk";
+		final SpannableString sstr = new SpannableString(aboutText);
 		Linkify.addLinks(sstr, Linkify.ALL);
 
 		return new AlertDialog.Builder(getActivity())

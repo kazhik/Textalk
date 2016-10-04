@@ -8,8 +8,8 @@ import java.net.SocketException;
 
 import android.util.Log;
 
-public class UdpReceiver implements Runnable {
-	public interface MessageListener {
+class UdpReceiver implements Runnable {
+	interface MessageListener {
 		void onReceived(InetAddress sender, String msg);
 	}
 	private DatagramSocket m_socket;
@@ -18,10 +18,10 @@ public class UdpReceiver implements Runnable {
 	
 	private static final String TAG = "UdpReceiver";
 
-	public UdpReceiver(MessageListener listener) {
+	UdpReceiver(MessageListener listener) {
 		m_listener = listener;
 	}
-	public void init(int port, int buffsize) {
+	void init(int port, int buffsize) {
 		try {
 			m_socket = new DatagramSocket(port);
 			m_recvBuff = new byte[buffsize];

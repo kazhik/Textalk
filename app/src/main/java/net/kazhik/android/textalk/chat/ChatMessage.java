@@ -27,11 +27,11 @@ public class ChatMessage implements Parcelable {
 		this.message = strArray[1];
 		this.sendTime = in.readLong();
     }
-	public boolean isSent() {
+	boolean isSent() {
 		return (this.type == SENT);
 	}
 
-	public String getMessage() {
+	String getMessage() {
 		return this.message;
 	}
 
@@ -40,13 +40,13 @@ public class ChatMessage implements Parcelable {
 
 	}
 
-	public String getSender() {
+	String getSender() {
 		return this.sender;
 	}
 	public void setSender(String sender) {
 		this.sender = sender;
 	}
-	public long getSendTime() {
+	long getSendTime() {
 		return this.sendTime;
 	}
 	@Override

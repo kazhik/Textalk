@@ -25,13 +25,14 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
 
 public class HandwritingActivity extends Activity implements
-		View.OnTouchListener, ServiceConnection, ChatManager.ReceiveMessageListener {
+		OnTouchListener, ServiceConnection, ChatManager.ReceiveMessageListener {
 
 	private HandwritingView m_handwritingView;
 	private static final String TAG = "HandwritingActivity";
@@ -54,7 +55,7 @@ public class HandwritingActivity extends Activity implements
 		m_clearBtn = (Button) findViewById(R.id.clearBtn);
 		m_sendBtn = (Button) findViewById(R.id.sendBtn);
 
-		Bitmap bmp = null;
+		Bitmap bmp;
 		Intent intent = this.getIntent();
 //		String sender = intent.getStringExtra("sender");
 		String filename = intent.getStringExtra("bitmap");
@@ -106,6 +107,7 @@ public class HandwritingActivity extends Activity implements
 			else
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 			break;
+        case Surface.ROTATION_0:
 		default:
 			if (height > width)
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -142,7 +144,7 @@ public class HandwritingActivity extends Activity implements
 		switch (view.getId()) {
 		case R.id.undoBtn:
 			m_handwritingView.undo();
-			if (m_handwritingView.hasStack() == false) {
+			if (!m_handwritingView.hasStack()) {
 				this.disableButtons();
 				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 			}
@@ -191,7 +193,7 @@ public class HandwritingActivity extends Activity implements
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		boolean ret = true;
+		boolean ret;
 		Intent intent;
 		switch (item.getItemId()) {
 		case Constants.MENU_SETTING:
@@ -236,6 +238,8 @@ public class HandwritingActivity extends Activity implements
 		}
 
 	}
+
+	// ServiceConnection
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		Log.d(TAG, "onServiceConnected: " + name.toString());
@@ -250,6 +254,7 @@ public class HandwritingActivity extends Activity implements
 		}
 
 	}
+	// ServiceConnection
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
 		Log.d(TAG, "onServiceDisConnected: " + name.toString());
@@ -259,7 +264,7 @@ public class HandwritingActivity extends Activity implements
 		class SetSendButtonEnabled implements Runnable {
 			private boolean enable;
 			
-			public SetSendButtonEnabled(boolean enable) {
+			private SetSendButtonEnabled(boolean enable) {
 				this.enable = enable;
 			}
 			@Override
@@ -267,11 +272,12 @@ public class HandwritingActivity extends Activity implements
 				m_sendBtn.setEnabled(enable);
 			}
 			
-		};
+		}
 
 		this.runOnUiThread(new SetSendButtonEnabled(enable));
 	}
 
+	// ChatManager.ReceiveMessageListener
 	@Override
 	public void onConnected(String ipaddr, String name) {
 		this.toast(this.getResources().getString(R.string.connected, name));
@@ -279,12 +285,14 @@ public class HandwritingActivity extends Activity implements
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
 
+	// ChatManager.ReceiveMessageListener
 	@Override
 	public void onRenamed(String oldname, String newname) {
 		this.toast(this.getResources().getString(R.string.renamed, oldname, newname));
 		
 	}
 
+	// ChatManager.ReceiveMessageListener
 	@Override
 	public void onDisconnected(String ipaddr, String name) {
 		this.toast(this.getResources().getString(R.string.disconnected, name));
@@ -293,27 +301,7 @@ public class HandwritingActivity extends Activity implements
 			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		}
 	}
-	private void toast(String msg) {
-		class ShowToast implements Runnable {
-			private String msg;
-			public ShowToast(String msg) {
-				this.msg = msg;
-			}
-
-			@Override
-			public void run() {
-				
-				Toast.makeText(HandwritingActivity.this,
-						this.msg,
-						Toast.LENGTH_LONG).show();
-				
-			}
-			
-		};
-		this.runOnUiThread(new ShowToast(msg));
-		
-	}
-
+	// ChatManager.ReceiveMessageListener
 	@Override
 	public void onMessage(String sender, String text) {
 		Intent intent = new Intent();
@@ -322,11 +310,16 @@ public class HandwritingActivity extends Activity implements
 		this.setResult(RESULT_OK, intent);
 		this.finish();
 	}
+	// ChatManager.ReceiveMessageListener
+	@Override
+	public void onBitmap(String name, String filename) {
+		this.showBitmap(name, filename);
+	}
 	private void showBitmap(String sender, String filename) {
 		class ShowBitmap implements Runnable {
 			private Bitmap bmp;
 			
-			public ShowBitmap(Bitmap bmp) {
+			private ShowBitmap(Bitmap bmp) {
 				this.bmp = bmp;
 			}
 
@@ -338,16 +331,32 @@ public class HandwritingActivity extends Activity implements
 				
 			}
 			
-		};
+		}
 		Bitmap bmp = BitmapFactory.decodeFile(filename);
 		new File(filename).delete();
 
 		this.runOnUiThread(new ShowBitmap(bmp));
 	}
+	private void toast(String msg) {
+		class ShowToast implements Runnable {
+			private String msg;
+			public ShowToast(String msg) {
+				this.msg = msg;
+			}
 
+			@Override
+			public void run() {
 
-	@Override
-	public void onBitmap(String name, String filename) {
-		this.showBitmap(name, filename);
+				Toast.makeText(HandwritingActivity.this,
+						this.msg,
+						Toast.LENGTH_LONG).show();
+
+			}
+
+		}
+		this.runOnUiThread(new ShowToast(msg));
+
 	}
+
+
 }

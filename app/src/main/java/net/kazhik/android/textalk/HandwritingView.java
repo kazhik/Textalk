@@ -15,7 +15,7 @@ import android.view.View;
 
 public class HandwritingView extends View {
 
-	private Stack <Path> m_pathStack = new Stack<Path>();
+	private Stack <Path> m_pathStack = new Stack<>();
 	private PointF m_lastPt;
 	private Path m_currentPath = new Path();
 	private Paint m_currentPaint;

@@ -3,9 +3,6 @@
  */
 package net.kazhik.android.textalk;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -19,11 +16,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
+import java.util.ArrayList;
+
 /**
  * @author kazhik
  *
  */
-public class ExpressionDialog extends Dialog
+class ExpressionDialog extends Dialog
 	implements DialogInterface.OnShowListener, OnItemClickListener, View.OnClickListener {
 	private ExpressionTable m_expressionTable;
 	private String m_selectedStr = "";
@@ -31,18 +30,18 @@ public class ExpressionDialog extends Dialog
 	/**
 	 * @param context
 	 */
-	public ExpressionDialog(Context context, ExpressionTable expressionTable) {
+	ExpressionDialog(Context context, ExpressionTable expressionTable) {
 		super(context);
 		m_expressionTable = expressionTable;
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 
 	}
 
-	public String getSelectedStr() {
+	String getSelectedStr() {
 		return m_selectedStr;
 	}
 
-	public void setSelectedStr(String selectedStr) {
+	void setSelectedStr(String selectedStr) {
 		this.m_selectedStr = selectedStr;
 	}
 
@@ -74,10 +73,10 @@ public class ExpressionDialog extends Dialog
 		int max = Integer.parseInt(maxStr);
 		
 		ArrayAdapter<String> expressions =
-				new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1);
+				new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1);
 		ArrayList<String> expressionsFromDB = m_expressionTable.getExpressions(max);
-		for (Iterator<String> it = expressionsFromDB.iterator(); it.hasNext();) {
-			expressions.add(it.next());
+		for (String anExpressionsFromDB : expressionsFromDB) {
+			expressions.add(anExpressionsFromDB);
 		}
 		lvExpressions.setAdapter(expressions);
 

@@ -16,9 +16,9 @@ import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-public class PeerManager implements ConnectionListener {
+class PeerManager implements ConnectionListener {
 
-	public interface PeerListener {
+	interface PeerListener {
 		void onNewHost(String addr, String name);
 	}
 	private static final String TAG = "PeerManager";
@@ -35,28 +35,33 @@ public class PeerManager implements ConnectionListener {
 	private String networkMode = "udp";
 	private PeerListener listener;
 	
-	public PeerManager(Context context, PeerListener listener) {
+	PeerManager(Context context, PeerListener listener) {
 		this.context = context;
 		this.listener = listener;
 	}
-	public void init(String myname) {
+	void init(String myname) {
 		SharedPreferences prefs =
 				PreferenceManager.getDefaultSharedPreferences(this.context);
 		this.networkMode = prefs.getString("connection_mode", "udp");
 		
 		this.myname = myname;
-		
-		if (this.networkMode.equals("udp")) {
-			this.udpManager = new UdpManager();
-			this.udpManager.start(this.context, this.myname, this);
-		} else if (this.networkMode.equals("wifi_p2p")) {
-		    this.wifiBroadcastManager = new WifiBroadcastManager(this.context, this);
-		} else if (this.networkMode.equals("wifi_tethering")) {
-			if (this.isTetheringOn()) {
-				this.connectTetheringClients();
-			}
-		} else {
-			Log.e(TAG, "Unknown network mode: " + this.networkMode);
+
+		switch (this.networkMode) {
+			case "udp":
+				this.udpManager = new UdpManager();
+				this.udpManager.start(this.context, this.myname, this);
+				break;
+			case "wifi_p2p":
+				this.wifiBroadcastManager = new WifiBroadcastManager(this.context, this);
+				break;
+			case "wifi_tethering":
+				if (this.isTetheringOn()) {
+					this.connectTetheringClients();
+				}
+				break;
+			default:
+				Log.e(TAG, "Unknown network mode: " + this.networkMode);
+				break;
 		}
 
 		
@@ -76,13 +81,10 @@ public class PeerManager implements ConnectionListener {
 			Method method = wifi.getClass().getDeclaredMethod("isWifiApEnabled");
 			method.setAccessible(true);
 			return (Boolean) method.invoke(wifi);
-		} catch (NoSuchMethodException e) {
-			Log.e(TAG, "isTetheringOn", e);
-		} catch (IllegalAccessException e) {
-			Log.e(TAG, "isTetheringOn", e);
-		} catch (IllegalArgumentException e) {
-			Log.e(TAG, "isTetheringOn", e);
-		} catch (InvocationTargetException e) {
+		} catch (NoSuchMethodException |
+				IllegalAccessException |
+				InvocationTargetException |
+				IllegalArgumentException e) {
 			Log.e(TAG, "isTetheringOn", e);
 		}
 		return false;
@@ -104,15 +106,19 @@ public class PeerManager implements ConnectionListener {
 		this.peers.remove(addr);
 	}
 
-	public void resume() {
-		if (this.networkMode.equals("wifi_p2p")) {
-			this.wifiBroadcastManager.resume();
-		} else if (this.networkMode.equals("wifi_tethering")) {
-			this.connectTetheringClients();
-		} else if (this.networkMode.equals("udp")) {
-		}
+	void resume() {
+        switch (this.networkMode) {
+            case "wifi_p2p":
+                this.wifiBroadcastManager.resume();
+                break;
+            case "wifi_tethering":
+                this.connectTetheringClients();
+                break;
+            case "udp":
+                break;
+        }
 	}
-	public void pause() {
+	void pause() {
 		if (this.networkMode.equals("wifi_p2p")) {
 			this.wifiBroadcastManager.pause();
 		} else if (this.networkMode.equals("udp")) {
@@ -120,7 +126,7 @@ public class PeerManager implements ConnectionListener {
 	}
 	// http://stackoverflow.com/questions/9906021/getting-the-ip-address-of-client-or-getting-the-informationssid-of-clients-con
 	private Map<String, String> getAddressMap() {
-		Map<String, String> addrMap = new HashMap<String, String>();
+		Map<String, String> addrMap = new HashMap<>();
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new FileReader("/proc/net/arp"));
@@ -128,7 +134,7 @@ public class PeerManager implements ConnectionListener {
 			while ((line = br.readLine()) != null) {
 				String[] splitted = line.split(" +");
 
-				if (splitted != null && splitted.length >= 4) {
+				if (splitted.length >= 4) {
 					String macAddr = splitted[3];
 
 					if (macAddr.matches("..:..:..:..:..:..")) {
@@ -144,8 +150,10 @@ public class PeerManager implements ConnectionListener {
 			Log.e(TAG, "Failed to read /proc/net/arp", e);
 		} finally {
 			try {
-				br.close();
-			} catch (IOException e) {
+                if (br != null) {
+                    br.close();
+                }
+            } catch (IOException ignored) {
 			}
 		}
 		return addrMap;

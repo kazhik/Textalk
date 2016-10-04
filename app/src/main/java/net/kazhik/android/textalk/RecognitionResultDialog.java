@@ -17,8 +17,8 @@ public class RecognitionResultDialog extends DialogFragment {
 	private OnResultListener m_listener;
 
 	public interface OnResultListener {
-		public void onRetry();
-		public void onSelect(String text);
+		void onRetry();
+		void onSelect(String text);
 	}
 
 	public RecognitionResultDialog() {
@@ -47,7 +47,7 @@ public class RecognitionResultDialog extends DialogFragment {
 		ListView resultView = new ListView(activity);
 		resultView.setScrollingCacheEnabled(false);
 
-		ArrayAdapter<String> recogResults = new ArrayAdapter<String>(activity,
+		ArrayAdapter<String> recogResults = new ArrayAdapter<>(activity,
 				android.R.layout.simple_list_item_1);
 		for (String result: results) {
 			recogResults.add(result);
@@ -64,7 +64,7 @@ public class RecognitionResultDialog extends DialogFragment {
 
 		class SelectResultListener implements AdapterView.OnItemClickListener {
 			private Dialog dialog;
-			public SelectResultListener(Dialog dialog) {
+			private SelectResultListener(Dialog dialog) {
 				super();
 				this.dialog = dialog;
 			}
@@ -77,7 +77,7 @@ public class RecognitionResultDialog extends DialogFragment {
 
 				this.dialog.dismiss();
 			}
-		};
+		}
 		
 
 		AlertDialog resultDialog = new AlertDialog.Builder(activity)

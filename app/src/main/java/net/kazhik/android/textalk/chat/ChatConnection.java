@@ -15,8 +15,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-public class ChatConnection implements Runnable {
-	public interface MessageListener {
+class ChatConnection implements Runnable {
+	interface MessageListener {
 		void onNewMessage(String addr, String msg);
 		void onNewBitmap(String addr, Bitmap bmp);
 		void onClosed(String addr);
@@ -29,8 +29,8 @@ public class ChatConnection implements Runnable {
 	private static final String TAG = "ChatConnection";
 
 	
-	public ChatConnection(Socket socket, String addr, String name,
-			MessageListener listener) {
+	ChatConnection(Socket socket, String addr, String name,
+				   MessageListener listener) {
 		this.socket = socket;
 		this.addr = addr;
 		this.name = name;
@@ -48,8 +48,7 @@ public class ChatConnection implements Runnable {
 					Log.e(TAG, "Failed to close", e1);
 				}
 			}
-			return;
-		}		
+		}
 	}
 	public String getName() {
 		return this.name;
@@ -57,7 +56,7 @@ public class ChatConnection implements Runnable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public boolean isConnected() {
+	boolean isConnected() {
 		return this.socket.isConnected();
 	}
 	@Override
@@ -106,13 +105,13 @@ public class ChatConnection implements Runnable {
 		os.write(sendData);
 		
 	}
-	public void sendBitmap(Bitmap bmp) throws IOException {
+	void sendBitmap(Bitmap bmp) throws IOException {
 		Log.d(TAG, "sendBitmap: " + bmp.getByteCount());
 		ByteArrayOutputStream bos=new ByteArrayOutputStream();
 		bmp.compress(Bitmap.CompressFormat.PNG, 100, bos);
 		this.sendData('B', bos.toByteArray());
 	}
-	public void sendText(String text) throws IOException {
+	void sendText(String text) throws IOException {
 		Log.d(TAG, "ChatConnection#sendMessage: " + text
 				+ " to: " + this.socket.getInetAddress().getHostAddress());
 		this.sendData('T', text.getBytes("UTF-8"));

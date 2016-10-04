@@ -1,6 +1,6 @@
 package net.kazhik.android.textalk.chat;
 
-public interface ConnectionListener {
+interface ConnectionListener {
 	void onNewHost(String addr, String name);
 	void onHostDead(String addr);
 
