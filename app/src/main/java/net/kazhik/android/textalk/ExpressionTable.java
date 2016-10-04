@@ -19,13 +19,13 @@ import android.util.Log;
  * @author kazhik
  *
  */
-public class ExpressionTable {
-	public static final String DB_NAME = "textalk.db";
-	public static final String TABLE_NAME = "t_expression";
+class ExpressionTable {
+	private static final String DB_NAME = "textalk.db";
+	private static final String TABLE_NAME = "t_expression";
 	
-	public static final String EXPRESSION = "expression";
-	public static final String SORTORDER = "sortorder";
-	public static final String TIMESUSED = "timesused";
+	private static final String EXPRESSION = "expression";
+	private static final String SORTORDER = "sortorder";
+	private static final String TIMESUSED = "timesused";
 	
     private DatabaseHelper m_databaseHelper;
 	
@@ -67,14 +67,14 @@ public class ExpressionTable {
 			Log.e(this.getClass().getName(), e.getMessage());
 		}
 
-		return new ArrayList<String>(expressions);
+		return new ArrayList<>(expressions);
 	}
 
-	public ExpressionTable(Context context) {
+	ExpressionTable(Context context) {
         m_databaseHelper = new DatabaseHelper(context);
 	}
 
-	public void updateTimesUsed(String expression) {
+	void updateTimesUsed(String expression) {
 		SQLiteDatabase db = m_databaseHelper.getWritableDatabase();
 
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
@@ -85,7 +85,7 @@ public class ExpressionTable {
 		String[] selectionArgs = {expression};
 
 		try {
-			Cursor cursor = null;
+			Cursor cursor;
 			cursor = qb.query(db, columns, selection, selectionArgs, null,
 					null, null);
 			if (cursor != null && cursor.getCount() == 1) {
@@ -105,14 +105,14 @@ public class ExpressionTable {
 		}
 
 	}
-    public void clear() {
+    void clear() {
 		SQLiteDatabase db = m_databaseHelper.getWritableDatabase();
 		
 		db.delete(TABLE_NAME, null, null);
 
     }
 	
-	public ArrayList<String> getExpressions(int max) {
+	ArrayList<String> getExpressions(int max) {
 		
 		SQLiteDatabase db = m_databaseHelper.getReadableDatabase();
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
@@ -125,7 +125,7 @@ public class ExpressionTable {
 		String sortOrder = "timesused desc";
 		String limit = (max == 0)? null: Integer.toString(max);
 		
-		ArrayList<String> result = new ArrayList<String>();
+		ArrayList<String> result = new ArrayList<>();
 		
 		Cursor cursor = qb.query(db, columns, selection, selectionArgs, null,
 				null, sortOrder, limit);
@@ -135,7 +135,7 @@ public class ExpressionTable {
 		}
 		
 		cursor.moveToFirst();
-		while (cursor.isAfterLast() == false) {
+		while (!cursor.isAfterLast()) {
 			result.add(cursor.getString(0));
 			cursor.moveToNext();
 		}
