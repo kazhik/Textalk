@@ -39,6 +39,10 @@ class UdpManager implements UdpReceiver.MessageListener {
 		WifiManager wifiManager =
 				(WifiManager)context.getSystemService(Context.WIFI_SERVICE);
 
+        if (!wifiManager.isWifiEnabled()) {
+            Log.e(TAG, "WiFi not enabled");
+            return;
+        }
 		WifiInfo wifiInfo = wifiManager.getConnectionInfo();
 		this.localAddr = this.convertIpAddr(wifiInfo.getIpAddress());
 		if (this.localAddr == null) {
@@ -125,7 +129,8 @@ class UdpManager implements UdpReceiver.MessageListener {
 		m_sender.scheduleAtFixedRate(broadcast, 0, 10, TimeUnit.SECONDS);
 
 	}
-	
+
+	// UdpReceiver.MessageListener
 	@Override
 	public void onReceived(InetAddress sender, String msg) {
 		if (sender.equals(this.localAddr)) {

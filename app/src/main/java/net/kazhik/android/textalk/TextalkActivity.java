@@ -1,12 +1,9 @@
 package net.kazhik.android.textalk;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
@@ -18,7 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -27,15 +23,13 @@ import net.kazhik.android.textalk.chat.ChatAdapter;
 import net.kazhik.android.textalk.chat.ChatManager;
 import net.kazhik.android.textalk.chat.ChatMessage;
 import net.kazhik.android.textalk.chat.ChatService;
-import net.kazhik.android.textalk.chat.ChatService.ChatBinder;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class TextalkActivity extends Activity implements
-		ChatManager.ReceiveMessageListener, ServiceConnection {
+public class TextalkActivity extends ChatActivity {
 	private static final String KEY_SPEAK_HISTORY = "speak_history";
 	private static final int REQ_SPEAK = 1001;
 	private static final int REQ_HANDWRITE = 1002;
@@ -45,7 +39,7 @@ public class TextalkActivity extends Activity implements
 	private String myname = "Textalk";
 
 	private ChatManager chatManager;
-	
+
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -326,31 +320,17 @@ public class TextalkActivity extends Activity implements
 	}
 	@Override
 	public void onConnected(String ipaddr, String name) {
+        super.onConnected(ipaddr, name);
+
 		String msg = getResources().getString(R.string.connected, name);
 		this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, name, msg));
-
-        this.keepScreenOn(true);
 	}
     @Override
     public void onDisconnected(String ipaddr, String name) {
+        super.onDisconnected(ipaddr, name);
+
         String msg = getResources().getString(R.string.disconnected, name);
         this.showChatMessage(new ChatMessage(ChatMessage.SYSTEM, name, msg));
-        if (this.chatManager.getConnectionCount() == 0) {
-            this.keepScreenOn(false);
-        }
-    }
-    private void keepScreenOn(final boolean on) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (on) {
-                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                } else {
-                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                }
-            }
-        });
-
     }
 
     @Override
@@ -375,47 +355,12 @@ public class TextalkActivity extends Activity implements
 		
 	}
 	@Override
-	protected void onPause() {
-		super.onPause();
-		if (this.chatManager != null) {
-			this.chatManager.pause();
-		}
-	}
-	@Override
-	protected void onResume() {
-		super.onResume();
-		if (this.chatManager != null) {
-			this.chatManager.resume();
-		}
+	public void onServiceConnected(ComponentName name, IBinder iBinder) {
+        super.onServiceConnected(name, iBinder);
 
-	}
-	@Override
-	protected void onStart() {
-		super.onStart();
-		Log.d(TAG, "bind service");
-		Intent intent = new Intent(this, ChatService.class);
+        ChatService.ChatBinder binder = (ChatService.ChatBinder)iBinder;
+        this.chatManager = binder.getChatManager();
 
-		this.bindService(intent, this, Context.BIND_AUTO_CREATE);
-	}
-	@Override
-	protected void onStop() {
-		super.onStop();
-		Log.d(TAG, "unbind service");
-		this.unbindService(this);
-	}
-	@Override
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		Log.d(TAG, "onServiceConnected: " + name.toString());
-		ChatBinder binder = (ChatBinder)service;
-		this.chatManager = binder.getChatManager();
-		this.chatManager.init(this.myname);
-		this.chatManager.addReceiveMessageListener(this);
-		
 		this.chatManager.resume();
-	}
-	@Override
-	public void onServiceDisconnected(ComponentName name) {
-		Log.d(TAG, "onServiceDisConnected: " + name.toString());
-		
 	}
 }

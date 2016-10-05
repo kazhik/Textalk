@@ -1,16 +1,7 @@
 package net.kazhik.android.textalk;
 
-import java.io.File;
-import java.io.IOException;
-
-import net.kazhik.android.textalk.chat.ChatManager;
-import net.kazhik.android.textalk.chat.ChatService;
-import net.kazhik.android.textalk.chat.ChatService.ChatBinder;
-import android.app.Activity;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -26,13 +17,18 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+import net.kazhik.android.textalk.chat.ChatManager;
+import net.kazhik.android.textalk.chat.ChatService;
 
-public class HandwritingActivity extends Activity implements
-		OnTouchListener, ServiceConnection, ChatManager.ReceiveMessageListener {
+import java.io.File;
+import java.io.IOException;
+
+
+public class HandwritingActivity extends ChatActivity implements
+		OnTouchListener {
 
 	private HandwritingView m_handwritingView;
 	private static final String TAG = "HandwritingActivity";
@@ -41,7 +37,6 @@ public class HandwritingActivity extends Activity implements
 	private Button m_clearBtn;
 	private Button m_sendBtn;
 	private ChatManager chatManager;
-	private String myname;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -66,10 +61,9 @@ public class HandwritingActivity extends Activity implements
 				m_handwritingView.setBitmap(bmp);
 			}
 		}
-		this.myname = intent.getStringExtra("myname");
 
 		m_undoBtn.setEnabled(false);
-		m_sendBtn.setEnabled(false);
+
 	}
 
 	private void disableButtons() {
@@ -208,57 +202,27 @@ public class HandwritingActivity extends Activity implements
 		}
 		return ret;
 	}
-	@Override
-	protected void onStart() {
-		super.onStart();
-		
-		Log.d(TAG, "bind service");
-		Intent intent = new Intent(this, ChatService.class);
-
-		this.bindService(intent, this, Context.BIND_AUTO_CREATE);
-	}
-	@Override
-	protected void onStop() {
-		super.onStop();
-		Log.d(TAG, "unbind service");
-		this.unbindService(this);
-	}
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (this.chatManager != null) {
-			this.chatManager.pause();
-		}
-	}
-	@Override
-	protected void onResume() {
-		super.onResume();
-		if (this.chatManager != null) {
-			this.chatManager.resume();
-		}
-
-	}
 
 	// ServiceConnection
 	@Override
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		Log.d(TAG, "onServiceConnected: " + name.toString());
-		ChatBinder binder = (ChatBinder)service;
-		this.chatManager = binder.getChatManager();
-		this.chatManager.init(this.myname);
-		this.chatManager.addReceiveMessageListener(this);
-		if (this.chatManager.getConnectionCount() > 0) {
-			m_sendBtn.setEnabled(true);
-		} else {
-			m_sendBtn.setEnabled(false);
-		}
+	public void onServiceConnected(ComponentName name, IBinder iBinder) {
+        super.onServiceConnected(name, iBinder);
+        ChatService.ChatBinder binder = (ChatService.ChatBinder)iBinder;
+        this.chatManager = binder.getChatManager();
+        if (this.hasChatConnection()) {
+            m_sendBtn.setEnabled(true);
+        } else {
+            m_sendBtn.setEnabled(false);
 
+        }
 	}
 	// ServiceConnection
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
-		Log.d(TAG, "onServiceDisConnected: " + name.toString());
-		
+        super.onServiceDisconnected(name);
+        if (!this.hasChatConnection()) {
+            m_sendBtn.setEnabled(false);
+        }
 	}
 	private void setSendButtonEnabled(boolean enable) {
 		class SetSendButtonEnabled implements Runnable {
@@ -280,10 +244,22 @@ public class HandwritingActivity extends Activity implements
 	// ChatManager.ReceiveMessageListener
 	@Override
 	public void onConnected(String ipaddr, String name) {
+        super.onConnected(ipaddr, name);
+
 		this.toast(this.getResources().getString(R.string.connected, name));
 		this.setSendButtonEnabled(true);
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 	}
+
+    // ChatManager.ReceiveMessageListener
+    @Override
+    public void onDisconnected(String ipaddr, String name) {
+        super.onDisconnected(ipaddr, name);
+
+        this.toast(this.getResources().getString(R.string.disconnected, name));
+        if (!hasChatConnection()) {
+            this.setSendButtonEnabled(false);
+        }
+    }
 
 	// ChatManager.ReceiveMessageListener
 	@Override
@@ -292,15 +268,6 @@ public class HandwritingActivity extends Activity implements
 		
 	}
 
-	// ChatManager.ReceiveMessageListener
-	@Override
-	public void onDisconnected(String ipaddr, String name) {
-		this.toast(this.getResources().getString(R.string.disconnected, name));
-		if (this.chatManager.getConnectionCount() == 0) {
-			this.setSendButtonEnabled(false);
-			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		}
-	}
 	// ChatManager.ReceiveMessageListener
 	@Override
 	public void onMessage(String sender, String text) {
@@ -340,7 +307,7 @@ public class HandwritingActivity extends Activity implements
 	private void toast(String msg) {
 		class ShowToast implements Runnable {
 			private String msg;
-			public ShowToast(String msg) {
+			private ShowToast(String msg) {
 				this.msg = msg;
 			}
 

@@ -25,12 +25,14 @@ public class ChatService extends Service {
 	}
 	@Override
 	public void onCreate() {
+		Log.d(TAG, "onCreate");
 		this.chatManager = new ChatManager(this);
 
 	}
 
 	@Override
 	public void onDestroy() {
+		Log.d(TAG, "onDestroy");
 		super.onDestroy();
 		try {
 			this.chatManager.close();
