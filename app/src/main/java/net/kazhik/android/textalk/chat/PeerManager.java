@@ -1,9 +1,12 @@
 package net.kazhik.android.textalk.chat;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -115,21 +118,23 @@ class PeerManager implements ConnectionListener {
                 this.connectTetheringClients();
                 break;
             case "udp":
+            default:
                 break;
         }
 	}
 	void pause() {
 		if (this.networkMode.equals("wifi_p2p")) {
 			this.wifiBroadcastManager.pause();
-		} else if (this.networkMode.equals("udp")) {
 		}
 	}
 	// http://stackoverflow.com/questions/9906021/getting-the-ip-address-of-client-or-getting-the-informationssid-of-clients-con
-	private Map<String, String> getAddressMap() {
+    private Map<String, String> getAddressMap() {
 		Map<String, String> addrMap = new HashMap<>();
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader("/proc/net/arp"));
+            InputStreamReader isr =
+                    new InputStreamReader(new FileInputStream("/proc/net/arp"), "UTF-8");
+			br = new BufferedReader(isr);
 			String line;
 			while ((line = br.readLine()) != null) {
 				String[] splitted = line.split(" +");

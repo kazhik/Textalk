@@ -2,6 +2,7 @@ package net.kazhik.android.textalk;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -36,6 +37,7 @@ public class ExportBitmap extends AsyncTask<Intent, Void, Boolean> {
 		String filePath = Environment.getExternalStorageDirectory().getPath()
 				+ File.separator + m_context.getResources().getString(R.string.app_name);
 		File APP_FILE_PATH = new File(filePath);
+        FileOutputStream out = null;
 		try {
 			if (!APP_FILE_PATH.exists()) {
 				boolean result = APP_FILE_PATH.mkdirs();
@@ -49,13 +51,20 @@ public class ExportBitmap extends AsyncTask<Intent, Void, Boolean> {
 			String timeStamp = sdf.format(new Date());
 			
 			this.filename = filePath + File.separator + "HW_" + timeStamp + ".png";
-			FileOutputStream out = new FileOutputStream(new File(this.filename));
+			out = new FileOutputStream(new File(this.filename));
 			m_bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
 			out.flush();
-			out.close();
 			return true;
 		} catch (Exception e) {
-			Log.d("ExportBitmap", e.getMessage());
+            Log.e("ExportBitmap", e.getMessage(), e);
+		} finally {
+			if (out != null) {
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    Log.e("ExportBitmap", e.getMessage(), e);
+                }
+            }
 		}
 		return false;
 	}

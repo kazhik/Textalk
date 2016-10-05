@@ -1,18 +1,20 @@
 package net.kazhik.android.textalk.chat;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import android.util.Log;
 
 class UdpBroadcast implements Runnable {
-	private static final String TAG = "BroadcastLocalAddress";
+	private static final String TAG = "UdpBroadcast";
 
 	private DatagramSocket m_socket;
 	private DatagramPacket m_packet;
@@ -28,11 +30,13 @@ class UdpBroadcast implements Runnable {
 				Log.e(TAG, "Failed to get broadcast address");
 				return false;
 			}
-			m_packet = new DatagramPacket(sendData.getBytes(),
-					sendData.getBytes().length, adr, targetPort);
+			byte[] data = sendData.getBytes("UTF-8");
+			m_packet = new DatagramPacket(data, data.length, adr, targetPort);
 		} catch (SocketException e) {
-			Log.e(TAG, "BroadcastLocalAddress", e);
+			Log.e(TAG, e.getMessage(), e);
 			return false;
+		} catch (UnsupportedEncodingException e) {
+			Log.e(TAG, e.getMessage(), e);
 		}
 		return true;
 

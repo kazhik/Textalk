@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.charset.Charset;
 
 import android.util.Log;
 
@@ -41,7 +42,7 @@ class UdpReceiver implements Runnable {
 			while (!m_socket.isClosed()) {
 				m_socket.receive(packet);
 				String recvMsg = new String(packet.getData(),
-						packet.getOffset(), packet.getLength());
+						packet.getOffset(), packet.getLength(), "UTF-8");
 				m_listener.onReceived(packet.getAddress(), recvMsg);
 			}
 			Log.i(TAG, "Receiver end");

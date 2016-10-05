@@ -1,6 +1,7 @@
 package net.kazhik.android.textalk.chat;
 
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -82,14 +83,16 @@ class UdpManager implements UdpReceiver.MessageListener {
 	}
 	private void refreshRemoteAddrs() {
 		long currTime = System.currentTimeMillis();
-		for (String addr: m_remoteAddrs.keySet()) {
-			long lastUpdateTime = m_remoteAddrs.get(addr);
-			if (currTime - lastUpdateTime > 20 * 1000) {
-				Log.i(TAG, addr + " is dead");
-				m_listener.onHostDead(addr);
-				m_remoteAddrs.remove(addr);
-			}
-		}
+        for (Map.Entry addrMapEntry: m_remoteAddrs.entrySet()) {
+            String addr = (String) addrMapEntry.getKey();
+            long lastUpdateTime = (long) addrMapEntry.getValue();
+            if (currTime - lastUpdateTime > 20 * 1000) {
+                Log.i(TAG, addr + " is dead");
+                m_listener.onHostDead(addr);
+                m_remoteAddrs.remove(addr);
+            }
+
+        }
 	}
 	private void startRefresh() {
 		Runnable r = new Runnable() {
@@ -114,11 +117,17 @@ class UdpManager implements UdpReceiver.MessageListener {
 		
 	}
 	private void startBroadcasting(String sendData) {
-		int sendLen = sendData.getBytes().length;
-		if (sendLen > BUFFSIZE) {
-			Log.e(TAG, "senddata too big: " + sendLen);
-			return;
-		}
+        int sendLen = 0;
+        try {
+            sendLen = sendData.getBytes("UTF-8").length;
+            if (sendLen > BUFFSIZE) {
+                Log.e(TAG, "senddata too big: " + sendLen);
+                return;
+            }
+        } catch (UnsupportedEncodingException e) {
+            Log.e(TAG, e.getMessage(), e);
+            return;
+        }
 		UdpBroadcast broadcast = new UdpBroadcast();
 		boolean ret = broadcast.init(this.localAddr, PORT, sendData);
 		if (!ret) {

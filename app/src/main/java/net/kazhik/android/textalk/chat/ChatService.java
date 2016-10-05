@@ -12,7 +12,7 @@ public class ChatService extends Service {
 
 	private ChatManager chatManager;
 	private ChatBinder chatBinder = new ChatBinder();
-	private static final String TAG = "HandwritingActivity";
+	private static final String TAG = "ChatService";
 	
 	public class ChatBinder extends Binder {
 

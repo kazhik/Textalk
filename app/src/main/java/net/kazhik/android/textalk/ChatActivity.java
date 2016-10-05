@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -32,6 +33,10 @@ public class ChatActivity extends Activity
 
         Intent intent = this.getIntent();
         this.myname = intent.getStringExtra("myname");
+        if (this.myname == null) {
+            this.myname =
+                    PreferenceManager.getDefaultSharedPreferences(this).getString("myname", "Textalk");
+        }
 
     }
     @Override
