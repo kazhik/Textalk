@@ -18,86 +18,86 @@ import android.widget.TextView;
 
 public class ChatAdapter extends BaseAdapter {
 
-	private static class ViewHolder {
-		TextView message;
-		TextView info;
-	}
+    private static class ViewHolder {
+        TextView message;
+        TextView info;
+    }
 
-	private Context context;
-	private List<ChatMessage> messages
-		= Collections.synchronizedList(new ArrayList<ChatMessage>());
+    private Context context;
+    private List<ChatMessage> messages
+        = Collections.synchronizedList(new ArrayList<ChatMessage>());
 
-	public ChatAdapter(Context context) {
-		super();
-		this.context = context;
-	}
+    public ChatAdapter(Context context) {
+        super();
+        this.context = context;
+    }
 
-	public void setMessageList(List<ChatMessage> msgList) {
-		this.messages.clear();
-		this.messages.addAll(msgList);
-	}
-	public void addMessage(ChatMessage msg) {
-		this.messages.add(msg);
-		this.notifyDataSetChanged();
-	}
+    public void setMessageList(List<ChatMessage> msgList) {
+        this.messages.clear();
+        this.messages.addAll(msgList);
+    }
+    public void addMessage(ChatMessage msg) {
+        this.messages.add(msg);
+        this.notifyDataSetChanged();
+    }
 
-	@Override
-	public int getCount() {
-		return this.messages.size();
-	}
+    @Override
+    public int getCount() {
+        return this.messages.size();
+    }
 
-	@Override
-	public Object getItem(int position) {
-		return this.messages.get(position);
-	}
+    @Override
+    public Object getItem(int position) {
+        return this.messages.get(position);
+    }
 
-	@Override
-	public long getItemId(int position) {
-		return position;
-	}
+    @Override
+    public long getItemId(int position) {
+        return position;
+    }
 
-	@Override
-	public View getView(int position, View convertView, ViewGroup parent) {
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
 
-		ViewHolder holder;
-		if (convertView == null) {
-			holder = new ViewHolder();
-			convertView = LayoutInflater.from(this.context).inflate(
-					R.layout.chat_row, parent, false);
-			holder.message = (TextView) convertView
-					.findViewById(R.id.text_message);
-			holder.info = (TextView) convertView.findViewById(R.id.text_info);
-			convertView.setTag(holder);
-		} else {
-			holder = (ViewHolder) convertView.getTag();
-		}
-		
-		ChatMessage message = (ChatMessage) this.getItem(position);
-		
-		holder.message.setText(message.getMessage());
-		
-		String sender = message.getSender();
-		
-		DateFormat df = DateFormat.getTimeInstance(DateFormat.DEFAULT, Locale.getDefault());
-		String timeText = df.format(message.getSendTime());
-		
-		String infoTxt = "(" + sender + "/" + timeText + ")";
-		
-		holder.info.setText(infoTxt);
-		
-		int gravity = message.isSent() ? Gravity.END : Gravity.START;
-		
-		LayoutParams lp;
+        ViewHolder holder;
+        if (convertView == null) {
+            holder = new ViewHolder();
+            convertView = LayoutInflater.from(this.context).inflate(
+                    R.layout.chat_row, parent, false);
+            holder.message = (TextView) convertView
+                    .findViewById(R.id.text_message);
+            holder.info = (TextView) convertView.findViewById(R.id.text_info);
+            convertView.setTag(holder);
+        } else {
+            holder = (ViewHolder) convertView.getTag();
+        }
 
-		lp = (LayoutParams) holder.message.getLayoutParams();
-		lp.gravity = gravity;
-		holder.message.setLayoutParams(lp);
+        ChatMessage message = (ChatMessage) this.getItem(position);
 
-		lp = (LayoutParams) holder.info.getLayoutParams();
-		lp.gravity = gravity;
-		holder.info.setLayoutParams(lp);
+        holder.message.setText(message.getMessage());
 
-		return convertView;
-	}
+        String sender = message.getSender();
+
+        DateFormat df = DateFormat.getTimeInstance(DateFormat.DEFAULT, Locale.getDefault());
+        String timeText = df.format(message.getSendTime());
+
+        String infoTxt = "(" + sender + "/" + timeText + ")";
+
+        holder.info.setText(infoTxt);
+
+        int gravity = message.isSent() ? Gravity.END : Gravity.START;
+
+        LayoutParams lp;
+
+        lp = (LayoutParams) holder.message.getLayoutParams();
+        lp.gravity = gravity;
+        holder.message.setLayoutParams(lp);
+
+        lp = (LayoutParams) holder.info.getLayoutParams();
+        lp.gravity = gravity;
+        holder.info.setLayoutParams(lp);
+
+        return convertView;
+    }
 
 }

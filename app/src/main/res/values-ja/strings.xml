@@ -18,7 +18,7 @@
     <string name="menu_pick_history">履歴から選択</string>
     <string name="menu_clear_history">履歴の削除</string>
     <string name="menu_about">%sについて</string>
-    <string name="no_expressions">1件もありません</string>
+    <string name="no_history">1件もありません</string>
     <string name="no_results">1件もありません</string>
     <string name="confirm_clear">履歴を消去しますか？</string>
     <string name="bitmap_sent">ビットマップが送信されました</string>
@@ -34,12 +34,12 @@
     <string name="renamed">%1$sの名前が%2$sに変わりました</string>
     
     <string name="pref_settings_title">設定</string>
-    <string name="pref_expressions_settings_title">履歴の設定</string>
-    <string name="pref_expressions_max_dialogtitle">履歴の最大表示数</string>
-    <string name="pref_expressions_max_title">最大表示数</string>
-    <string name="pref_expressions_max_summary">履歴の最大表示数</string>
-    <string name="pref_expressions_clear_title">履歴の削除</string>
-    <string name="pref_expressions_clear_summary">履歴を削除します</string>
+    <string name="pref_history_settings_title">履歴の設定</string>
+    <string name="pref_history_max_dialogtitle">履歴の最大表示数</string>
+    <string name="pref_history_max_title">最大表示数</string>
+    <string name="pref_history_max_summary">履歴の最大表示数</string>
+    <string name="pref_history_clear_title">履歴の削除</string>
+    <string name="pref_history_clear_summary">履歴を削除します</string>
     <string name="pref_recognition_settings_title">音声認識の設定</string>
     <string name="pref_recognition_language_dialogtitle">音声認識の言語</string>
     <string name="pref_recognition_language_title">言語</string>
@@ -48,7 +48,7 @@
     <string name="pref_network_settings_title">ネットワーク</string>
     <string name="pref_connection_mode_title">接続方法</string>
     <string name="pref_connection_mode_summary">通信相手との接続方法</string>
-    <string name="pref_myname_title">名前</string>
-    <string name="pref_myname_summary">チャットメッセージに表示される名前</string>
+    <string name="pref_devicename_title">デバイス名</string>
+    <string name="pref_devicename_summary">チャットメッセージに表示される名前</string>
     
 </resources>

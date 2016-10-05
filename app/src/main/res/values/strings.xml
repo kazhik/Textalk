@@ -18,7 +18,7 @@
     <string name="menu_pick_history">Pick from history</string>
     <string name="menu_clear_history">Clear history</string>
     <string name="menu_about">About %s</string>
-    <string name="no_expressions">No saved history.</string>
+    <string name="no_history">No saved history.</string>
     <string name="no_results">No results.</string>
     <string name="confirm_clear">Clear all history?</string>
     <string name="bitmap_sent">Bitmap was sent.</string>
@@ -34,12 +34,12 @@
     <string name="renamed">%1$s renamed to %2$s</string>
 
     <string name="pref_settings_title">Settings</string>
-    <string name="pref_expressions_settings_title">History</string>
-    <string name="pref_expressions_max_dialogtitle">Max of history</string>
-    <string name="pref_expressions_max_title">Maximum</string>
-    <string name="pref_expressions_max_summary">Maximum of history to be shown</string>
-    <string name="pref_expressions_clear_title">Clear history</string>
-    <string name="pref_expressions_clear_summary">Clear all history</string>
+    <string name="pref_history_settings_title">History</string>
+    <string name="pref_history_max_dialogtitle">Max of history</string>
+    <string name="pref_history_max_title">Maximum</string>
+    <string name="pref_history_max_summary">Maximum of history to be shown</string>
+    <string name="pref_history_clear_title">Clear history</string>
+    <string name="pref_history_clear_summary">Clear all history</string>
     <string name="pref_recognition_settings_title">Speech recognition</string>
     <string name="pref_recognition_language_dialogtitle">Language in speech recognition</string>
     <string name="pref_recognition_language_title">Language</string>
@@ -48,7 +48,7 @@
     <string name="pref_network_settings_title">Network</string>
     <string name="pref_connection_mode_title">Connection Mode</string>
     <string name="pref_connection_mode_summary">UDP/WiFi P2P/Tethering</string>
-    <string name="pref_myname_title">My name</string>
-    <string name="pref_myname_summary">Name shown with chat message</string>
+    <string name="pref_devicename_title">Device name</string>
+    <string name="pref_devicename_summary">Name shown with chat message</string>
     
 </resources>

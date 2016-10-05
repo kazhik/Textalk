@@ -2,15 +2,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/pref_settings_title" >
 
-    <PreferenceCategory android:title="@string/pref_expressions_settings_title" >
+    <PreferenceCategory android:title="@string/pref_history_settings_title" >
 
         <ListPreference
-            android:dialogTitle="@string/pref_expressions_max_dialogtitle"
-            android:entries="@array/expressions_max"
-            android:entryValues="@array/expressions_max_value"
-            android:key="expressions_max"
-            android:summary="@string/pref_expressions_max_summary"
-            android:title="@string/pref_expressions_max_title" />
+            android:dialogTitle="@string/pref_history_max_dialogtitle"
+            android:entries="@array/history_max"
+            android:entryValues="@array/history_max_value"
+            android:key="history_max"
+            android:summary="@string/pref_history_max_summary"
+            android:title="@string/pref_history_max_title" />
         
     </PreferenceCategory>
 
@@ -34,9 +34,9 @@
             android:summary="@string/pref_connection_mode_summary"
             android:title="@string/pref_connection_mode_title" />
         <EditTextPreference
-            android:key="myname"
-            android:summary="@string/pref_myname_summary"
-            android:title="@string/pref_myname_title" />
+            android:key="devicename"
+            android:summary="@string/pref_devicename_summary"
+            android:title="@string/pref_devicename_title" />
 
     </PreferenceCategory>
 

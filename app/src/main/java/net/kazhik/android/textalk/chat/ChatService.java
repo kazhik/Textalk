@@ -10,41 +10,41 @@ import android.util.Log;
 
 public class ChatService extends Service {
 
-	private ChatManager chatManager;
-	private ChatBinder chatBinder = new ChatBinder();
-	private static final String TAG = "ChatService";
-	
-	public class ChatBinder extends Binder {
+    private ChatManager chatManager;
+    private ChatBinder chatBinder = new ChatBinder();
+    private static final String TAG = "ChatService";
 
-		public ChatService getService() {
-			return ChatService.this;
-		}
-		public ChatManager getChatManager() {
-			return chatManager;
-		}
-	}
-	@Override
-	public void onCreate() {
-		Log.d(TAG, "onCreate");
-		this.chatManager = new ChatManager(this);
+    public class ChatBinder extends Binder {
 
-	}
+        public ChatService getService() {
+            return ChatService.this;
+        }
+        public ChatManager getChatManager() {
+            return chatManager;
+        }
+    }
+    @Override
+    public void onCreate() {
+        Log.d(TAG, "onCreate");
+        this.chatManager = new ChatManager(this);
 
-	@Override
-	public void onDestroy() {
-		Log.d(TAG, "onDestroy");
-		super.onDestroy();
-		try {
-			this.chatManager.close();
-		} catch (IOException e) {
-			Log.e(TAG, "Failed to close", e);
-		}
-	}
+    }
 
-	@Override
-	public IBinder onBind(Intent intent) {
-		Log.d(TAG, "onBind");
-		return this.chatBinder;
-	}
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
+        try {
+            this.chatManager.close();
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to close", e);
+        }
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        Log.d(TAG, "onBind");
+        return this.chatBinder;
+    }
 
 }

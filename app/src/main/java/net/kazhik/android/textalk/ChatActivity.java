@@ -21,22 +21,22 @@ import net.kazhik.android.textalk.chat.ChatService;
 public class ChatActivity extends Activity
         implements ChatManager.ReceiveMessageListener, ServiceConnection {
     private ChatManager chatManager;
-    private String myname;
+    private String deviceName;
     private static final String TAG = "ChatActivity";
 
     protected boolean hasChatConnection() {
         return this.chatManager.getConnectionCount() > 0;
     }
+    protected String getDeviceName() {
+        return this.deviceName;
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = this.getIntent();
-        this.myname = intent.getStringExtra("myname");
-        if (this.myname == null) {
-            this.myname =
-                    PreferenceManager.getDefaultSharedPreferences(this).getString("myname", "Textalk");
-        }
+        this.deviceName =
+                PreferenceManager.getDefaultSharedPreferences(this).getString("devicename",
+                        android.os.Build.MODEL);
 
     }
     @Override
@@ -102,7 +102,7 @@ public class ChatActivity extends Activity
         Log.d(TAG, "onServiceConnected: " + name.toString());
         ChatService.ChatBinder binder = (ChatService.ChatBinder)iBinder;
         this.chatManager = binder.getChatManager();
-        this.chatManager.init(this.myname);
+        this.chatManager.init(this.deviceName);
         this.chatManager.addReceiveMessageListener(this);
         if (this.chatManager.getConnectionCount() > 0) {
             this.keepScreenOn(true);

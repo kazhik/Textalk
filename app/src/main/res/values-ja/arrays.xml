@@ -1,35 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-<string-array name="expressions_max">
+<string-array name="history_max">
 <item>5</item>
 <item>10</item>
 <item>20</item>
 <item>全て</item>
-</string-array>
-<string-array name="expressions_max_value">
-<item>5</item>
-<item>10</item>
-<item>20</item>
-<item>0</item>
 </string-array>
 <string-array name="recognition_languages">
 <item>既定値</item>
 <item>日本語</item>
 <item>英語</item>
 </string-array>
-<string-array name="recognition_languages_value">
-<item>default</item>
-<item>ja</item>
-<item>en</item>
-</string-array>
 <string-array name="connection_mode">
 <item>UDP</item>
 <item>WiFi P2P(試行版)</item>
 <item>WiFiテザリング(二機器間のみ)</item>
-</string-array>
-<string-array name="connection_mode_value">
-<item>udp</item>
-<item>wifi_p2p</item>
-<item>wifi_tethering</item>
 </string-array>
 </resources>

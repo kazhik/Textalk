@@ -4,6 +4,7 @@
 package net.kazhik.android.textalk;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -19,11 +20,11 @@ import android.util.Log;
  * @author kazhik
  *
  */
-class ExpressionTable {
+class HistoryTable {
 	private static final String DB_NAME = "textalk.db";
-	private static final String TABLE_NAME = "t_expression";
+	private static final String TABLE_NAME = "t_history";
 	
-	private static final String EXPRESSION = "expression";
+	private static final String PHRASE = "phrase";
 	private static final String SORTORDER = "sortorder";
 	private static final String TIMESUSED = "timesused";
 	
@@ -31,14 +32,14 @@ class ExpressionTable {
 	
     private static class DatabaseHelper extends SQLiteOpenHelper {
         DatabaseHelper(Context context) {
-            super(context, DB_NAME, null, 5);
+            super(context, DB_NAME, null, 6);
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL("CREATE TABLE " + TABLE_NAME + " ("
             		+ BaseColumns._ID + " INTEGER PRIMARY KEY,"
-            		+ EXPRESSION + " TEXT,"
+            		+ PHRASE + " TEXT,"
             		+ SORTORDER + " INTEGER,"
             		+ TIMESUSED + " INTEGER);");
         }
@@ -51,38 +52,19 @@ class ExpressionTable {
         }
     }
 
-	public ArrayList<String> initialize() {
-		ArrayList<String> expressions = new ArrayList<String>();
-		
-		SQLiteDatabase db = m_databaseHelper.getWritableDatabase();
-		try {
-			for (int i = 0; i < expressions.size(); i++ ) {
-				ContentValues values = new ContentValues();
-				values.put(ExpressionTable.EXPRESSION, expressions.get(i));
-				values.put(ExpressionTable.SORTORDER, i + 1);
-				values.put(ExpressionTable.TIMESUSED, 0);
-				db.insert(TABLE_NAME, null, values);
-			}
-		} catch (IllegalArgumentException e) {
-			Log.e(this.getClass().getName(), e.getMessage());
-		}
-
-		return new ArrayList<>(expressions);
-	}
-
-	ExpressionTable(Context context) {
+	HistoryTable(Context context) {
         m_databaseHelper = new DatabaseHelper(context);
 	}
 
-	void updateTimesUsed(String expression) {
+	void updateTimesUsed(String phrase) {
 		SQLiteDatabase db = m_databaseHelper.getWritableDatabase();
 
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 		qb.setTables(TABLE_NAME);
 		
-		String[] columns = { ExpressionTable.TIMESUSED };
-		String selection = "expression = ?";
-		String[] selectionArgs = {expression};
+		String[] columns = { HistoryTable.TIMESUSED };
+		String selection = PHRASE + " = ?";
+		String[] selectionArgs = {phrase};
 
 		try {
 			Cursor cursor;
@@ -91,13 +73,13 @@ class ExpressionTable {
 			if (cursor != null && cursor.getCount() == 1) {
 				cursor.moveToFirst();
 				ContentValues values = new ContentValues();
-				values.put(ExpressionTable.TIMESUSED, cursor.getInt(0) + 1);
-				db.update(TABLE_NAME, values, "expression = ?", selectionArgs);
+				values.put(HistoryTable.TIMESUSED, cursor.getInt(0) + 1);
+				db.update(TABLE_NAME, values, PHRASE + " = ?", selectionArgs);
 			} else {
 				ContentValues values = new ContentValues();
-				values.put(ExpressionTable.EXPRESSION, expression);
-				values.put(ExpressionTable.SORTORDER, 0);
-				values.put(ExpressionTable.TIMESUSED, 1);
+				values.put(HistoryTable.PHRASE, phrase);
+				values.put(HistoryTable.SORTORDER, 0);
+				values.put(HistoryTable.TIMESUSED, 1);
 				db.insert(TABLE_NAME, null, values);
 			}
 		} catch (SQLiteException e) {
@@ -112,14 +94,13 @@ class ExpressionTable {
 
     }
 	
-	ArrayList<String> getExpressions(int max) {
+	List<String> getHistory(int max) {
 		
 		SQLiteDatabase db = m_databaseHelper.getReadableDatabase();
 		SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
 		qb.setTables(TABLE_NAME);
 		
-//		String[] columns = { ExpressionTable.EXPRESSION, ExpressionTable.TIMESUSED };
-		String[] columns = { ExpressionTable.EXPRESSION };
+		String[] columns = { HistoryTable.PHRASE};
 		String selection = null;
 		String[] selectionArgs = null;
 		String sortOrder = "timesused desc";

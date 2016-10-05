@@ -1,10 +1,8 @@
 package net.kazhik.android.textalk.chat;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +25,7 @@ class PeerManager implements ConnectionListener {
 	private static final String TAG = "PeerManager";
 	private Context context;
 
-	private String myname;
+	private String deviceName;
 	
 	// Address -> Name
 	private Map<String, String> peers = new ConcurrentHashMap<String, String>();
@@ -42,17 +40,17 @@ class PeerManager implements ConnectionListener {
 		this.context = context;
 		this.listener = listener;
 	}
-	void init(String myname) {
+	void init(String deviceName) {
 		SharedPreferences prefs =
 				PreferenceManager.getDefaultSharedPreferences(this.context);
 		this.networkMode = prefs.getString("connection_mode", "udp");
 		
-		this.myname = myname;
+		this.deviceName = deviceName;
 
 		switch (this.networkMode) {
 			case "udp":
 				this.udpManager = new UdpManager();
-				this.udpManager.start(this.context, this.myname, this);
+				this.udpManager.start(this.context, this.deviceName, this);
 				break;
 			case "wifi_p2p":
 				this.wifiBroadcastManager = new WifiBroadcastManager(this.context, this);
